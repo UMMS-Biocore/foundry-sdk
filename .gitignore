@@ -1,0 +1,6 @@
+build
+viafoundry_errors.log	
+viafoundry_sdk.egg-info
+viafoundry/__pycache__
+viafoundry/bin/__pycache__
+

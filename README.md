@@ -29,10 +29,16 @@ The **ViaFoundry SDK and CLI** provide a powerful way to interact with ViaFoundr
 
 The CLI provides quick access to ViaFoundry functionalities without needing to write code. Below are some common commands.
 
-### **1. Login to ViaFoundry**
+### **1. Configure to ViaFoundry**
 Authenticate with your ViaFoundry account:
 ```bash
-foundry login --hostname https://your-api-host.com --username your-username --password your-password
+foundry configure
+```
+
+or
+
+```bash
+foundry configure --hostname https://your-api-host.com --username your-username --password your-password
 ```
 
 Options:

@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="viafoundry-sdk",
-    version="1.0.0",
+    version="1.0.4",
     description="A Python SDK and CLI for interacting with Via Foundry's API.",
     author="Your Name",
     author_email="your.email@example.com",
@@ -12,6 +12,7 @@ setup(
         "click",
         "requests",
         "python-dotenv",
+        "os",
     ],
     entry_points={
         "console_scripts": [

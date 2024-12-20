@@ -1,8 +1,46 @@
-
-# ViaFoundry SDK and CLI
+# ViaFoundry SDK and CLI (v1.0.4)
 
 The **ViaFoundry SDK and CLI** provide a powerful way to interact with ViaFoundry APIs. Whether you're a developer integrating with the API or a user looking for a simple command-line interface, this package has you covered.
 
+---
+
+## Table of Contents
+- [Installation](#installation)
+- [CLI Usage](#cli-usage)
+  - [1. Configure the SDK](#1-configure-the-sdk)
+  - [2. Discover Endpoints](#2-discover-endpoints)
+    - [Usage](#usage)
+    - [Filtering Capabilities](#filtering-capabilities)
+    - [Free-Text Search](#free-text-search)
+    - [Key-Value Search](#key-value-search)
+    - [JSON Output](#json-output)
+    - [Summary](#summary)
+  - [3. Call an Endpoint](#3-call-an-endpoint)
+  - [4. Reports Management](#4-reports-management)
+    - [Fetch Report Data](#fetch-report-data)
+    - [List Unique Processes in a Report](#list-unique-processes-in-a-report)
+    - [List Files for a Specific Process](#list-files-for-a-specific-process)
+    - [Download a Specific File](#download-a-specific-file)
+    - [List All Files in a Report](#list-all-files-in-a-report)
+  - [5. Example: Launch an App](#5-example-launch-an-app)
+- [Logging](#logging)
+- [SDK Usage](#sdk-usage)
+  - [1. Import the SDK](#1-import-the-sdk)
+  - [2. Initialize the Client](#2-initialize-the-client)
+  - [3. Authenticate and Configure](#3-authenticate-and-configure)
+  - [4. Discover Endpoints](#4-discover-endpoints-sdk)
+    - [Usage](#usage-sdk)
+    - [Free-Text Search](#free-text-search-sdk)
+    - [Key-Value Search](#key-value-search-sdk)
+    - [JSON Output](#json-output-sdk)
+    - [Summary](#summary-sdk)
+  - [5. Fetch Report Data](#5-fetch-report-data)
+  - [6. List Processes in a Report](#6-list-processes-in-a-report)
+  - [7. List Files for a Process](#7-list-files-for-a-process)
+  - [8. Download a File](#8-download-a-file)
+  - [9. List All Files in a Report](#9-list-all-files-in-a-report)
+
+---
 ---
 
 ## Installation
@@ -29,7 +67,7 @@ The **ViaFoundry SDK and CLI** provide a powerful way to interact with ViaFoundr
 
 The CLI provides quick access to ViaFoundry functionalities without needing to write code. Below are some common commands.
 
-### **1. Configure to ViaFoundry**
+### **1. Configure the SDK**
 Authenticate with your ViaFoundry account:
 ```bash
 foundry configure
@@ -48,33 +86,237 @@ Options:
 
 ---
 
+
 ### **2. Discover Endpoints**
-List all available endpoints from the API:
+
+The `discover` command in the ViaFoundry CLI has been enhanced to support filtering of API endpoints. This feature allows users to narrow down the list of endpoints based on specific search criteria.
+
+---
+
+## Usage
+
+### Basic Command
 ```bash
-foundry discover
+foundry discover [OPTIONS]
 ```
+
+### Options
+- `--as-json`: Output the filtered results in JSON format.
+- `--search`: Search term to filter endpoints. Supports free-text or key-value format.
+
+---
+
+## Filtering Capabilities
+
+### Free-Text Search
+Search across all fields (`endpoint`, `method`, and `description`) using a case-insensitive match.
+
+#### Example:
+```bash
+foundry discover --search "auth"
+```
+
+#### Output:
+```plaintext
+Available API Endpoints:
+
+Endpoint: /auth/v1/oauth2/google-redirect
+Method: get
+Description: 'Google authentication callback. Best used with a web browser'
+
+Endpoint: /auth/v1/oauth2/token
+Method: post
+Description: 'Obtain an OAuth2 token'
+Data to send: {
+    "type": "object",
+    "properties": {
+        "client_id": {
+            "type": "string"
+        },
+        "client_secret": {
+            "type": "string"
+        },
+        "grant_type": {
+            "type": "string"
+        }
+    },
+    "required": ["client_id", "client_secret", "grant_type"]
+}
+```
+
+---
+
+### Key-Value Search
+Target specific fields by specifying a `key=value` pair.
+
+#### Supported Keys:
+- `endpoint`: Filters based on the endpoint path.
+- `description`: Filters based on the description text.
+
+#### Example 1: Search in Endpoint Field
+```bash
+foundry discover --search "endpoint=auth"
+```
+
+#### Example 2: Search in Description Field
+```bash
+foundry discover --search "description=Google"
+```
+
+---
+
+## JSON Output
+Add the `--as-json` flag to get the filtered results in JSON format.
+
+#### Example:
+```bash
+foundry discover --as-json --search "auth"
+```
+
+#### Output:
+```json
+{
+    "/auth/v1/oauth2/google-redirect": {
+        "get": {
+            "description": "Google authentication callback. Best used with a web browser",
+            "tags": ["auth"],
+            "responses": {
+                "301": {"description": "Redirected back to the ViaFoundry frontend."},
+                "404": {"description": "Invalid or expired token"},
+                "500": {"description": "Internal Server Error"}
+            }
+        }
+    },
+    "/auth/v1/oauth2/token": {
+        "post": {
+            "description": "Obtain an OAuth2 token",
+            "requestBody": {
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "client_id": {"type": "string"},
+                                "client_secret": {"type": "string"},
+                                "grant_type": {"type": "string"}
+                            },
+                            "required": ["client_id", "client_secret", "grant_type"]
+                        }
+                    }
+                }
+            },
+            "responses": {
+                "200": {"description": "Token issued successfully."},
+                "400": {"description": "Invalid client credentials."}
+            }
+        }
+    }
+}
+```
+
+---
+
+## Summary
+The enhanced `discover` command allows you to:
+- Filter API endpoints by free-text or key-value pairs.
+- View results in human-readable text or JSON format.
+- Customize your search to focus on specific fields such as `endpoint` or `description`.
+
+---
 
 ---
 
 ### **3. Call an Endpoint**
 Send a request to a specific endpoint:
 ```bash
-foundry call --method GET --endpoint /v1/example --params '{"key": "value"}'
+foundry call --method GET --endpoint /api/v1/example --params '{"key": "value"}'
 ```
 
 Options:
 - `--method`: HTTP method (`GET`, `POST`, etc.).
-- `--endpoint`: API endpoint path (e.g., `/v1/example`).
+- `--endpoint`: API endpoint path (e.g., `/api/v1/example`).
 - `--params`: Optional query parameters in JSON format (e.g., `{"key": "value"}`).
 - `--data`: Optional request body in JSON format (e.g., `{"key": "value"}`).
 
 ---
 
-### **4. View Help**
-For a list of available commands, run:
+### **4. Reports Management**
+Work with reports using the `foundry reports` command group.
+
+#### **a. Fetch Report Data**
+Fetch JSON data for a report:
 ```bash
-foundry --help
+foundry reports fetch REPORT_ID
 ```
+
+or
+
+```bash
+foundry reports fetch --reportID=REPORT_ID
+```
+
+#### **b. List Unique Processes in a Report**
+List all unique processes in a report:
+```bash
+foundry reports list-processes REPORT_ID
+```
+
+or
+
+```bash
+foundry reports list-processes --reportID=REPORT_ID
+```
+
+#### **c. List Files for a Specific Process**
+List files for a specific process within a report:
+```bash
+foundry reports list-files REPORT_ID PROCESS_NAME
+```
+
+or
+
+```bash
+foundry reports list-files --reportID=REPORT_ID --processName=PROCESS_NAME
+```
+
+#### **d. Download a Specific File**
+Download a file from a report:
+```bash
+foundry reports download-file REPORT_ID PROCESS_NAME FILE_NAME --download-dir /path/to/save
+```
+
+or
+
+```bash
+foundry reports download-file --reportID=REPORT_ID --processName=PROCESS_NAME --fileName=FILE_NAME --download-dir /path/to/save
+```
+
+#### **e. List All Files in a Report**
+List all files across all processes in a report:
+```bash
+foundry reports list-all-files REPORT_ID
+```
+
+or
+
+```bash
+foundry reports list-all-files --reportID=REPORT_ID
+```
+
+---
+
+### **5. Example: Launch an App**
+Send a POST request to a specific endpoint to launch an app:
+```bash
+foundry call --endpoint /api/app/v1/call/1 --method POST --data '{"type": "standalone"}'
+```
+
+---
+---
+
+## Logging
+
+Errors and debug information are logged to `viafoundry_errors.log` in the current working directory. Ensure this file is accessible for troubleshooting.
 
 ---
 
@@ -103,6 +345,11 @@ Example `config.json`:
 }
 ```
 
+If you already authenticated using CLI or want to use default file (~/.viaenv). You can use like below.
+
+```python
+client = ViaFoundryClient()
+```
 ---
 
 ### **3. Authenticate and Configure**
@@ -124,25 +371,185 @@ endpoints = client.discover()
 print("Discovered Endpoints:", endpoints)
 ```
 
+The `discover` function in the ViaFoundry SDK has been enhanced to support filtering of API endpoints. This feature allows developers to programmatically narrow down the list of endpoints based on specific search criteria.
+
 ---
 
-### **5. Call an Endpoint**
-Send a request to a specific endpoint:
+## Usage
+
+### Function Signature
 ```python
-response = client.call(
-    method="POST",
-    endpoint="/v1/process",
-    data={"key": "value"}
-)
-print("Response:", response)
+def discover(self, search=None, as_json=False):
+    """
+    Discover available API endpoints with optional filtering.
+
+    Parameters:
+        search (str): Search term to filter endpoints. Supports free-text or 'key=value' format.
+        as_json (bool): If True, return the filtered results as JSON.
+
+    Returns:
+        dict or str: Filtered endpoints as a dictionary (default) or JSON string if as_json is True.
+    """
+```
+
+### Parameters
+- `search`: 
+  - **Free-text search**: Searches across all fields (`endpoint`, `method`, and `description`) using a case-insensitive match.
+  - **Key-value search**: Targets specific fields such as `endpoint` or `description`.
+- `as_json`: If `True`, the function returns the results in JSON format.
+
+---
+
+## Examples
+
+### Free-Text Search
+Search across all fields using a case-insensitive match.
+
+#### Code:
+```python
+client = ViaFoundryClient(config_path="path/to/config.json")
+filtered_endpoints = client.discover(search="auth")
+for endpoint, methods in filtered_endpoints.items():
+    for method, details in methods.items():
+        print(f"Endpoint: {endpoint}")
+        print(f"Method: {method}")
+        print(f"Description: {details.get('description', 'No description available')}")
+```
+
+#### Output:
+```plaintext
+Endpoint: /auth/v1/oauth2/google-redirect
+Method: get
+Description: Google authentication callback. Best used with a web browser
+
+Endpoint: /auth/v1/oauth2/token
+Method: post
+Description: Obtain an OAuth2 token
 ```
 
 ---
 
-## Logging
+### Key-Value Search
+Target specific fields using `key=value` format.
 
-Errors and debug information are logged to `viafoundry_errors.log` in the current working directory. Ensure this file is accessible for troubleshooting.
+#### Code:
+```python
+# Search in the 'endpoint' field
+filtered_endpoints = client.discover(search="endpoint=auth")
+
+# Search in the 'description' field
+filtered_endpoints = client.discover(search="description=Google")
+```
 
 ---
+
+### JSON Output
+Get the filtered results in JSON format by setting `as_json=True`.
+
+#### Code:
+```python
+filtered_endpoints_json = client.discover(search="auth", as_json=True)
+print(filtered_endpoints_json)
+```
+
+#### Output:
+```json
+{
+    "/auth/v1/oauth2/google-redirect": {
+        "get": {
+            "description": "Google authentication callback. Best used with a web browser",
+            "tags": ["auth"],
+            "responses": {
+                "301": {"description": "Redirected back to the ViaFoundry frontend."},
+                "404": {"description": "Invalid or expired token"},
+                "500": {"description": "Internal Server Error"}
+            }
+        }
+    },
+    "/auth/v1/oauth2/token": {
+        "post": {
+            "description": "Obtain an OAuth2 token",
+            "requestBody": {
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "client_id": {"type": "string"},
+                                "client_secret": {"type": "string"},
+                                "grant_type": {"type": "string"}
+                            },
+                            "required": ["client_id", "client_secret", "grant_type"]
+                        }
+                    }
+                }
+            },
+            "responses": {
+                "200": {"description": "Token issued successfully."},
+                "400": {"description": "Invalid client credentials."}
+            }
+        }
+    }
+}
+```
+
+---
+
+## Summary
+The enhanced `discover` function in the SDK allows you to:
+- Filter API endpoints by free-text or key-value pairs.
+- Retrieve results as a Python dictionary or JSON string.
+- Focus your search on specific fields like `endpoint` or `description`.
+
+This makes it easier to programmatically explore and interact with the available API endpoints in ViaFoundry.
+
+---
+
+### **5. Fetch Report Data**
+Fetch JSON data for a specific report:
+```python
+report_data = client.reports.fetch_report_data(report_id="12345")
+```
+
+---
+
+### **6. List Processes in a Report**
+List unique processes in the fetched report data:
+```python
+process_names = client.reports.get_process_names(report_data)
+print("Processes:", process_names)
+```
+
+---
+
+### **7. List Files for a Process**
+List all files for a specific process in the report:
+```python
+files = client.reports.get_file_names(report_data, process_name="myProcess")
+print(files)
+```
+
+---
+
+### **8. Download a File**
+Download a specific file from the report:
+```python
+client.reports.download_file(
+    report_data,
+    process_name="myProcess",
+    file_name="example.txt",
+    download_dir="/path/to/save"
+)
+```
+
+---
+
+### **9. List All Files in a Report**
+List all files across all processes in the report:
+```python
+all_files = client.reports.get_all_files(report_data)
+print(all_files)
+```
+
 
 

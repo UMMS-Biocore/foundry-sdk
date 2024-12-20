@@ -1,6 +1,7 @@
 import requests
 from viafoundry.auth import Auth
 from requests.exceptions import RequestException, MissingSchema
+from viafoundry.reports import Reports
 import logging
 
 # Configure logging
@@ -11,7 +12,11 @@ class ViaFoundryClient:
     def __init__(self, config_path=None):
         try:
             self.auth = Auth(config_path)
-        except Exception:
+            logging.info("Authentication initialized successfully.")
+            self.reports = Reports(self)
+            logging.info("Reports functionality initialized successfully.")
+        except Exception as e:
+            logging.error("Initialization error", exc_info=True)
             self._raise_error(101, "Failed to initialize authentication. Check your configuration file.")
         self.endpoints_cache = None  # Cache for discovered endpoints
 

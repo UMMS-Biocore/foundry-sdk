@@ -6,8 +6,8 @@ build-backend = "hatchling.build"
 packages = ["viafoundry"]
 
 [project]
-name = "viafoundry-sdk"
-version = "1.0.5"
+name = "viafoundry_sdk"
+version = "1.0.6"
 authors = [
   { name="Alper Kucukural", email="alper@viascientific.com" },
 ]

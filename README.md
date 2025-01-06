@@ -1,4 +1,4 @@
-# ViaFoundry SDK and CLI (v1.0.5)
+# ViaFoundry SDK and CLI (v1.0.6)
 
 The **ViaFoundry SDK and CLI** provide a powerful way to interact with ViaFoundry APIs. Whether you're a developer integrating with the API or a user looking for a simple command-line interface, this package has you covered.
 
@@ -47,7 +47,7 @@ The **ViaFoundry SDK and CLI** provide a powerful way to interact with ViaFoundr
 
 1. **Install via pip**:
    ```bash
-   pip install viafoundry-sdk
+   pip install viafoundry_sdk
    ```
 
 2. **Verify Installation**:
@@ -407,8 +407,9 @@ Search across all fields using a case-insensitive match.
 
 #### Code:
 ```python
-client = ViaFoundryClient(config_path="path/to/config.json")
-filtered_endpoints = client.discover(search="auth")
+from viafoundry.client import ViaFoundryClient
+client = ViaFoundryClient()
+filtered_endpoints = client.discover(search="reports")
 for endpoint, methods in filtered_endpoints.items():
     for method, details in methods.items():
         print(f"Endpoint: {endpoint}")
@@ -418,13 +419,9 @@ for endpoint, methods in filtered_endpoints.items():
 
 #### Output:
 ```plaintext
-Endpoint: /auth/v1/oauth2/google-redirect
+Endpoint: /run/v1/{runId}/reports
 Method: get
-Description: Google authentication callback. Best used with a web browser
-
-Endpoint: /auth/v1/oauth2/token
-Method: post
-Description: Obtain an OAuth2 token
+Description: View the metdata and resource paths for run reports
 ```
 
 ---
@@ -435,10 +432,12 @@ Target specific fields using `key=value` format.
 #### Code:
 ```python
 # Search in the 'endpoint' field
-filtered_endpoints = client.discover(search="endpoint=auth")
+filtered_endpoints = client.discover(search="endpoint=reports")
+print(filtered_endpoints)
 
 # Search in the 'description' field
-filtered_endpoints = client.discover(search="description=Google")
+filtered_endpoints = client.discover(search="description=logs")
+print(filtered_endpoints)
 ```
 
 ---
@@ -448,62 +447,9 @@ Get the filtered results in JSON format by setting `as_json=True`.
 
 #### Code:
 ```python
-filtered_endpoints_json = client.discover(search="auth", as_json=True)
+filtered_endpoints_json = client.discover(search="logs", as_json=True)
 print(filtered_endpoints_json)
 ```
-
-#### Output:
-```json
-{
-    "/auth/v1/oauth2/google-redirect": {
-        "get": {
-            "description": "Google authentication callback. Best used with a web browser",
-            "tags": ["auth"],
-            "responses": {
-                "301": {"description": "Redirected back to the ViaFoundry frontend."},
-                "404": {"description": "Invalid or expired token"},
-                "500": {"description": "Internal Server Error"}
-            }
-        }
-    },
-    "/auth/v1/oauth2/token": {
-        "post": {
-            "description": "Obtain an OAuth2 token",
-            "requestBody": {
-                "content": {
-                    "application/json": {
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "client_id": {"type": "string"},
-                                "client_secret": {"type": "string"},
-                                "grant_type": {"type": "string"}
-                            },
-                            "required": ["client_id", "client_secret", "grant_type"]
-                        }
-                    }
-                }
-            },
-            "responses": {
-                "200": {"description": "Token issued successfully."},
-                "400": {"description": "Invalid client credentials."}
-            }
-        }
-    }
-}
-```
-
----
-
-## Summary
-The enhanced `discover` function in the SDK allows you to:
-- Filter API endpoints by free-text or key-value pairs.
-- Retrieve results as a Python dictionary or JSON string.
-- Focus your search on specific fields like `endpoint` or `description`.
-
-This makes it easier to programmatically explore and interact with the available API endpoints in ViaFoundry.
-
----
 
 ### **5. Fetch Report Data**
 Fetch JSON data for a specific report:
@@ -551,5 +497,15 @@ all_files = client.reports.get_all_files(report_data)
 print(all_files)
 ```
 
+---
 
+## Summary
+The enhanced `discover` function in the SDK allows you to:
+- Filter API endpoints by free-text or key-value pairs.
+- Retrieve results as a Python dictionary or JSON string.
+- Focus your search on specific fields like `endpoint` or `description`.
+- Access reports data and download them to use in further analysis
 
+This makes it easier to programmatically explore and interact with the available API endpoints in ViaFoundry.
+
+---

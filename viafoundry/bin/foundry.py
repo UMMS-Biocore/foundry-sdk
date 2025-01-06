@@ -37,7 +37,7 @@ def cli(ctx, version, config):
 @click.option('--identity-type', default=1, type=int, help="Identity type (default: 1)")
 @click.option('--redirect-uri', default="https://viafoundry.com/user", help="Redirect URI (default: https://viafoundry.com/user)")
 @click.pass_context
-def configure(ctx, hostname, username, password, identity_type, redirect_uri):
+def configure(ctx, hostname, username, password, identity_type=1, redirect_uri="https://viafoundry.com/user"):
     """Configure the SDK."""
     auth = ctx.obj['auth']
     try:

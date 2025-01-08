@@ -10,7 +10,7 @@ class Auth:
         self.config_path = config_path or DEFAULT_CONFIG_PATH
         self.config = self.load_config()
         self.hostname = self.config.get("hostname")  # Initialize hostname
-        self.bearer_token = self.config.get("token")  # Bearer token
+        self.bearer_token = self.config.get("bearer_token")  # Bearer token
 
     def load_config(self):
         """Load configuration from the config file."""
@@ -23,12 +23,12 @@ class Auth:
         """Save hostname and bearer token to the config file."""
         config = {
             "hostname": self.hostname,
-            "token": self.bearer_token  # Save only the bearer token
+            "bearer_token": self.bearer_token  # Save only the bearer token
         }
         with open(self.config_path, "w") as f:
             json.dump(config, f, indent=4)
 
-    def configure(self, hostname, username=None, password=None, identity_type=None, redirect_uri=None):
+    def configure(self, hostname, username=None, password=None, identity_type=1, redirect_uri="https://viafoundry.com/user"):
         """Prompt user for credentials if necessary and authenticate."""
         self.hostname = hostname
         if not username or not password:
@@ -42,11 +42,11 @@ class Auth:
         self.bearer_token = self.get_bearer_token(cookie_token)
         self.save_config()
 
-    def login(self, username, password, identity_type, redirect_uri):
+    def login(self, username, password, identity_type=1, redirect_uri="https://viafoundry.com/user"):
         """Authenticate and get the token from the Set-Cookie header."""
         if not self.hostname:
             raise ValueError("Hostname is not set. Please configure the SDK.")
-
+        
         url = f"{self.hostname}/api/auth/v1/login"
         payload = {
             "username": username,

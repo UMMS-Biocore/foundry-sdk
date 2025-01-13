@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="viafoundry_sdk",
-    version="1.0.6",
+    version="1.0.8",
     description="A Python SDK and CLI for interacting with Via Foundry's API.",
     author="Your Name",
     author_email="your.email@example.com",

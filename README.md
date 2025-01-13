@@ -1,4 +1,4 @@
-# ViaFoundry SDK and CLI (v1.0.7)
+# ViaFoundry SDK and CLI (v1.0.8)
 
 The **ViaFoundry SDK and CLI** provide a powerful way to interact with ViaFoundry APIs. Whether you're a developer integrating with the API or a user looking for a simple command-line interface, this package has you covered.
 
@@ -113,34 +113,34 @@ Search across all fields (`endpoint`, `method`, and `description`) using a case-
 
 #### Example:
 ```bash
-foundry discover --search "auth"
+foundry discover --search "reports"
 ```
 
 #### Output:
 ```plaintext
 Available API Endpoints:
 
-Endpoint: /auth/v1/oauth2/google-redirect
+Endpoint: /run/v1/{runId}/reports
 Method: get
-Description: 'Google authentication callback. Best used with a web browser'
+Description: 'View the metdata and resource paths for run reports'
 
-Endpoint: /auth/v1/oauth2/token
+Endpoint: /run/v1/{runId}/reports-dirs
+Method: get
+Description: 'Upload report directories'
+
+Endpoint: /run/v1/{runId}/reports/upload/:runUUID
 Method: post
-Description: 'Obtain an OAuth2 token'
+Description: 'list report directories'
 Data to send: {
     "type": "object",
     "properties": {
-        "client_id": {
-            "type": "string"
-        },
-        "client_secret": {
-            "type": "string"
-        },
-        "grant_type": {
-            "type": "string"
+        "dir": {
+            "type": "string",
+            "description": "The path to the report directory",
+            "example": "/path/to/report"
         }
     },
-    "required": ["client_id", "client_secret", "grant_type"]
+    "additionalProperties": false
 }
 ```
 
@@ -155,12 +155,12 @@ Target specific fields by specifying a `key=value` pair.
 
 #### Example 1: Search in Endpoint Field
 ```bash
-foundry discover --search "endpoint=auth"
+foundry discover --search "endpoint=reports"
 ```
 
 #### Example 2: Search in Description Field
 ```bash
-foundry discover --search "description=Google"
+foundry discover --search "description=parameters"  
 ```
 
 ---
@@ -170,48 +170,7 @@ Add the `--as-json` flag to get the filtered results in JSON format.
 
 #### Example:
 ```bash
-foundry discover --as-json --search "auth"
-```
-
-#### Output:
-```json
-{
-    "/auth/v1/oauth2/google-redirect": {
-        "get": {
-            "description": "Google authentication callback. Best used with a web browser",
-            "tags": ["auth"],
-            "responses": {
-                "301": {"description": "Redirected back to the ViaFoundry frontend."},
-                "404": {"description": "Invalid or expired token"},
-                "500": {"description": "Internal Server Error"}
-            }
-        }
-    },
-    "/auth/v1/oauth2/token": {
-        "post": {
-            "description": "Obtain an OAuth2 token",
-            "requestBody": {
-                "content": {
-                    "application/json": {
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "client_id": {"type": "string"},
-                                "client_secret": {"type": "string"},
-                                "grant_type": {"type": "string"}
-                            },
-                            "required": ["client_id", "client_secret", "grant_type"]
-                        }
-                    }
-                }
-            },
-            "responses": {
-                "200": {"description": "Token issued successfully."},
-                "400": {"description": "Invalid client credentials."}
-            }
-        }
-    }
-}
+foundry discover --as-json --search "reports"
 ```
 
 ---

@@ -50,7 +50,7 @@ class ViaFoundryClient:
             if not hostname:
                 self._raise_error(201, "Hostname is not configured. Please run the configuration setup.")
 
-            url = f"{hostname}/api-docs/swagger.json?group=App"
+            url = f"{hostname}/swagger.json"
             headers = self.auth.get_headers()
 
             try:

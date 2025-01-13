@@ -8,30 +8,25 @@ packages = ["viafoundry"]
 [project]
 name = "viafoundry_sdk"
 version = "1.0.7"
-authors = [
-  { name="Alper Kucukural", email="alper@viascientific.com" },
-]
+authors = [{ name = "Alper Kucukural", email = "alper@viascientific.com" }]
 description = "A Python SDK and CLI tool for interacting with ViaFoundry APIs."
 readme = "README.md"
 requires-python = ">=3.8"
 license = { text = "MIT" }
 classifiers = [
-    "Development Status :: 4 - Beta",
-    "Intended Audience :: Developers",
-    "Topic :: Software Development :: Libraries :: Python Modules",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
 ]
 
-dependencies = [
-    "click>=8.0",
-    "requests>=2.25.0",
-]
+dependencies = ["click>=8.0", "requests>=2.25.0", "pandas>=2.2.0"]
 
 [project.scripts]
 foundry = "viafoundry.bin.foundry:cli"
@@ -40,4 +35,3 @@ foundry = "viafoundry.bin.foundry:cli"
 Homepage = "https://github.com/viascienific/viafoundry-sdk"
 Documentation = "https://github.com/viascientific/viafoundry-sdk#readme"
 Issues = "https://github.com/viascientific/viafoundry-sdk/issues"
-

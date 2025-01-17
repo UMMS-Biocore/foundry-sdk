@@ -8,13 +8,6 @@ setup(
     author_email="alper@viascientific.com",
     packages=find_packages(include=["viafoundry", "viafoundry.*"]),
     package_data={"viafoundry": ["bin/*.py"]},  # Include all .py files in `bin/`
-    install_requires=[
-        "click",
-        "requests",
-        "python-dotenv",
-        "os",
-	"io",
-    ],
     entry_points={
         "console_scripts": [
             "foundry=viafoundry.bin.foundry:cli",

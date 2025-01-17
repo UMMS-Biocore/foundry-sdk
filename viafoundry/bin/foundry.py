@@ -291,7 +291,7 @@ def upload_report_file(ctx, report_id, file_path, remote_dir, reportid, filepath
             raise ValueError("File path is required. Provide it as an argument or use the --filePath option.")
         
         # Initialize client and call upload
-        client = ViaFoundryClient()
+        client = ctx.obj["client"]
         response = client.reports.upload_report_file(report_id, file_path, remote_dir)
         click.echo(f"File uploaded successfully: {response}")
     except Exception as e:

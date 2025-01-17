@@ -114,8 +114,6 @@ class ViaFoundryClient:
         headers = self.auth.get_headers()
 
         try:
-            # Debug request details
-
             if files:
                 # Use 'data' for form-encoded fields and 'files' for file uploads
                 response = requests.request(

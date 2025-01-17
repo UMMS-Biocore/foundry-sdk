@@ -122,7 +122,36 @@ class Reports:
         """Raise a categorized error with a specific code and message."""
         logging.error(f"Error {code}: {message}")  # Log the error
         raise RuntimeError(f"Error {code}: {message}")
-    
+
+    def upload_report_file(self, report_id, file_path, dir=None):
+        """Upload a file to a specific report.
+
+        Args:
+            report_id (str): The report ID for the API.
+            file_path (str): The local path to the file being uploaded.
+            dir (str, optional): Directory name for organizing files.
+
+        Returns:
+            dict: Response from the server.
+
+        Raises:
+            Exception: If the file upload fails or no reports are found.
+        """
+        try:
+            report_paths = self.get_all_report_paths(report_id)
+            attempt_id = report_paths[0].split("/report-resources/")[1].split("/pubweb")[0]
+
+            upload_endpoint = f"/api/run/v1/{report_id}/reports/upload/{attempt_id}"
+            files = {"file": open(file_path, "rb")}
+            data = {"dir": dir} if dir else {}
+
+            # Perform the upload
+            response = self.client.call("POST", upload_endpoint, files=files, data=data)
+            return response
+        except Exception as e:
+            print(f"Exception Details: {e}")  # Debug additional details
+            self._raise_error(602, f"Failed to upload file to report: {e}")
+
     def get_all_report_paths(self, report_id):
         """Get unique report directories and attempt IDs for a specific report.
 
@@ -186,32 +215,3 @@ class Reports:
         
         except Exception as e:
             self._raise_error(603, f"Failed to fetch possible directories: {e}")
-
-    def upload_report_file(self, report_id, file_path, dir=None):
-        """Upload a file to a specific report.
-
-        Args:
-            report_id (str): The report ID for the API.
-            file_path (str): The local path to the file being uploaded.
-            dir (str, optional): Directory name for organizing files.
-
-        Returns:
-            dict: Response from the server.
-
-        Raises:
-            Exception: If the file upload fails or no reports are found.
-        """
-        try:
-            report_paths = self.get_all_report_paths(report_id)
-            attempt_id = report_paths[0].split("/report-resources/")[1].split("/pubweb")[0]
-
-            upload_endpoint = f"/api/run/v1/{report_id}/reports/upload/{attempt_id}"
-            files = {"file": open(file_path, "rb")}
-            data = {"dir": dir} if dir else {}
-
-            # Perform the upload
-            response = self.client.call("POST", upload_endpoint, files=files, data=data)
-            return response
-        except Exception as e:
-            print(f"Exception Details: {e}")  # Debug additional details
-            self._raise_error(602, f"Failed to upload file to report: {e}")

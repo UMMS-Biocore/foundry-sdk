@@ -243,6 +243,60 @@ def list_all_files(ctx, report_id, reportid):
     except Exception as e:
         click.echo(f"Error: {e}", err=True)
 
+@reports.command()
+@click.argument("report_id", required=False)
+@click.option("--reportID", help="Report ID (alternative to positional argument).")
+@click.pass_context
+def get_report_dirs(ctx, report_id, reportid):
+    """List all dirs for a specific report."""
+    client = ctx.obj["client"]
+    report_id = report_id or reportid
+    if not report_id:
+        click.echo("Error: Report ID is required.", err=True)
+        return
+    try:
+        report_dirs = client.reports.get_report_dirs(report_id)
+        click.echo(report_dirs)
+    except Exception as e:
+        click.echo(f"Error: {e}", err=True)
+
+@reports.command()
+@click.argument("report_id", required=False, type=str)
+@click.argument("file_path", required=False, type=click.Path(exists=True))
+@click.argument("remote_dir", required=False, type=str)
+@click.option("--reportID", type=str, help="Report ID (alternative to positional argument).")
+@click.option("--filePath", type=click.Path(exists=True), help="Local file path (alternative to positional argument).")
+@click.option("--remoteDir", type=str, help="Directory name for organizing files (alternative to positional argument).")
+@click.pass_context
+def upload_report_file(ctx, report_id, file_path, remote_dir, reportid, filepath, remotedir):
+    """
+    Upload a file to a report.
+
+    REPORT_ID: The ID of the report .
+    FILE_PATH: The local file path of the file to upload (optional; can be specified with --filePath).
+    REMOTE_DIR: Directory name for organizing files (optional; can be specified with --remoteDir).
+
+    Examples:
+      viafoundry upload-report-file <report_id> <file_path> <directory>
+      viafoundry upload-report-file --reportID <report_id> --filePath <path_to_file> --remoteDir <directory>
+    """
+    try:
+        # Fallback to options if arguments are not provided
+        report_id = report_id or reportid
+        file_path = file_path or filepath
+        remote_dir = remote_dir or remotedir
+
+        # Ensure mandatory fields are present
+        if not file_path:
+            raise ValueError("File path is required. Provide it as an argument or use the --filePath option.")
+        
+        # Initialize client and call upload
+        client = ViaFoundryClient()
+        response = client.reports.upload_report_file(report_id, file_path, remote_dir)
+        click.echo(f"File uploaded successfully: {response}")
+    except Exception as e:
+        click.echo(f"Failed to upload file: {e}", err=True)
+
 if __name__ == "__main__":
     try:
         cli()

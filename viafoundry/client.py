@@ -104,7 +104,7 @@ class ViaFoundryClient:
 
         return filtered_endpoints
 
-    def call(self, method, endpoint, params=None, data=None):
+    def call(self, method, endpoint, params=None, data=None, files=None):
         """Send a request to a specific endpoint."""
         hostname = self.auth.hostname
         if not hostname:
@@ -114,13 +114,26 @@ class ViaFoundryClient:
         headers = self.auth.get_headers()
 
         try:
-            response = requests.request(method.upper(), url, params=params, json=data, headers=headers)
+            # Debug request details
+
+            if files:
+                # Use 'data' for form-encoded fields and 'files' for file uploads
+                response = requests.request(
+                    method.upper(), url, params=params, data=data, files=files, headers=headers
+                )
+            else:
+                # Standard request with JSON data
+                response = requests.request(
+                    method.upper(), url, params=params, json=data, headers=headers
+                )
+
             response.raise_for_status()
 
             if not response.text.strip():
                 self._raise_error(204, f"Empty response from server for endpoint: {endpoint}.")
             if "application/json" not in response.headers.get("Content-Type", ""):
-                self._raise_error(203, f"Non-JSON response received from endpoint: {endpoint}. Content: {response.text}")
+                #self._raise_error(203, f"Non-JSON response received from endpoint: {endpoint}. Content: {response.text}")
+                return response.text.strip()  # Return raw text response
 
             return response.json()
         except MissingSchema:

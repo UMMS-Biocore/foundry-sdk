@@ -1,4 +1,4 @@
-# ViaFoundry SDK and CLI (v1.0.8)
+# ViaFoundry SDK and CLI (v1.0.9)
 
 The **ViaFoundry SDK and CLI** provide a powerful way to interact with ViaFoundry APIs. Whether you're a developer integrating with the API or a user looking for a simple command-line interface, this package has you covered.
 
@@ -17,11 +17,13 @@ The **ViaFoundry SDK and CLI** provide a powerful way to interact with ViaFoundr
     - [Summary](#summary)
   - [3. Call an Endpoint](#3-call-an-endpoint)
   - [4. Reports Management](#4-reports-management)
-    - [Fetch Report Data](#fetch-report-data)
-    - [List Unique Processes in a Report](#list-unique-processes-in-a-report)
-    - [List Files for a Specific Process](#list-files-for-a-specific-process)
-    - [Download a Specific File](#download-a-specific-file)
-    - [List All Files in a Report](#list-all-files-in-a-report)
+    - [Fetch Report Data](#a-fetch-report-data)
+    - [List Unique Processes in a Report](#b-list-unique-processes-in-a-report)
+    - [List Files for a Specific Process](#c-list-files-for-a-specific-process)
+    - [Download a Specific File](#d-download-a-specific-file)
+    - [List All Files in a Report](#e-list-all-files-in-a-report)
+    - [Get directories in a Report to upload Files](#f-get-directories-in-a-report-to-upload-files)
+    - [Upload a File to a Report](#g-upload-a-file-to-a-report)
   - [5. Example: Launch an App](#5-example-launch-an-app)
 - [Logging](#logging)
 - [SDK Usage](#sdk-usage)
@@ -33,14 +35,16 @@ The **ViaFoundry SDK and CLI** provide a powerful way to interact with ViaFoundr
     - [Free-Text Search](#free-text-search-sdk)
     - [Key-Value Search](#key-value-search-sdk)
     - [JSON Output](#json-output-sdk)
-    - [Summary](#summary-sdk)
   - [5. Fetch Report Data](#5-fetch-report-data)
   - [6. List Processes in a Report](#6-list-processes-in-a-report)
   - [7. List Files for a Process](#7-list-files-for-a-process)
   - [8. Download a File](#8-download-a-file)
   - [9. List All Files in a Report](#9-list-all-files-in-a-report)
+  - [10. Upload report files](#10-upload-report-files)
+  - [11. Get report dirs](#11-get-report-dirs)
+  - [12. Get all report paths](#12-get-all-report-paths)
+  - [Summary](#summary)
 
----
 ---
 
 ## Installation
@@ -263,6 +267,43 @@ foundry reports list-all-files --reportID=REPORT_ID
 ```
 
 ---
+### **f. Get directories in a Report to upload Files**
+You can list possible directories in the report section that you can use while uploading files using the CLI:
+
+```bash
+foundry reports get-report-dirs REPORT_ID
+
+```
+or
+
+```bash
+foundry reports get-report-dirs --reportID REPORT_ID
+```
+
+
+### **g. Upload a File to a Report**
+
+You can upload a file to a specific report using the CLI:
+
+Options:
+- `--reportID` TEXT   Report ID (alternative to positional argument).
+- `--filePath` PATH   Local file path (alternative to positional argument).
+- `--remoteDir` TEXT  Directory name for organizing files (alternative to
+                    positional argument).
+
+```bash
+viafoundry upload-report-file REPORT_ID FILE_PATH REPORT-DIR
+```
+
+or 
+
+```bash
+viafoundry upload-report-file --reportID REPORT_ID --filePath FILE_PATH remoteDir REMOTE-DIR
+```
+
+Replace REPORT_ID with the target report’s ID and FILE_PATH with the path to the file you want to upload. Use the --dir option to specify a directory.
+
+---
 
 ### **5. Example: Launch an App**
 Send a POST request to a specific endpoint to launch an app:
@@ -270,7 +311,6 @@ Send a POST request to a specific endpoint to launch an app:
 foundry call --endpoint /api/app/v1/call/1 --method POST --data '{"type": "standalone"}'
 ```
 
----
 ---
 
 ## Logging
@@ -455,7 +495,114 @@ List all files across all processes in the report:
 all_files = client.reports.get_all_files(report_data)
 print(all_files)
 ```
+---
 
+### **10. Upload report files**
+
+Uploads a file to a specific report and organizes it in a specified directory.
+
+#### Function Definition
+```python
+def upload_report_file(self, report_id, file_path, dir=None):
+    \"\"\"Upload a file to a specific report.
+
+    Args:
+        report_id (str): The ID of the report.
+        file_path (str): The local path to the file being uploaded.
+        dir (str, optional): Directory name for organizing files.
+
+    Returns:
+        dict or str: Response from the server.
+    \"\"\"
+```
+
+#### Example Usage
+```python
+client = ViaFoundryClient()
+response = client.reports.upload_report_file(
+    report_id="1",
+    file_path="/path/to/your/file.csv",
+    dir="summary"
+)
+print("Upload Response:", response)
+```
+
+#### Expected Output
+```plaintext
+Upload Response: OK
+```
+
+---
+
+### **11. Get report dirs**
+
+Fetches unique directories from a report after the `pubweb` segment in the `routePath`.
+
+#### Function Definition
+```python
+def get_report_dirs(self, report_id):
+    \"\"\"Get possible directories following 'pubweb' in the routePath.
+
+    Args:
+        report_id (str): The ID of the report.
+
+    Returns:
+        list: A list of unique directories found after 'pubweb'.
+    \"\"\"
+```
+
+#### Example Usage
+```python
+client = ViaFoundryClient()
+directories = client.reports.get_report_dirs("1")
+print("Directories:", directories)
+```
+
+#### Expected Output
+```json
+{
+    "directories": [
+        "salmon_count",
+        "star_count",
+        "kallisto_count"
+    ]
+}
+```
+
+---
+
+### **12. Get all report paths**
+
+Fetches all `routePath` values from a specific report.
+
+#### Function Definition
+```python
+def get_all_report_paths(self, report_id):
+    \"\"\"Get all routePath values for a specific report.
+
+    Args:
+        report_id (str): The ID of the report.
+
+    Returns:
+        list: A list of all routePath values.
+    \"\"\"
+```
+
+#### Example Usage
+```python
+client = ViaFoundryClient()
+all_paths = client.reports.get_all_report_paths("578248d76b014cebafa23ad4f74f5689")
+print("Route Paths:", all_paths)
+```
+
+#### Expected Output
+```plaintext
+Route Paths: [
+    "/report-resources/dir1/pubweb/salmon_count",
+    "/report-resources/dir1/pubweb/star_count",
+    "/report-resources/dir1/pubweb/kallisto_count"
+]
+```
 ---
 
 ## Summary
@@ -463,7 +610,7 @@ The enhanced `discover` function in the SDK allows you to:
 - Filter API endpoints by free-text or key-value pairs.
 - Retrieve results as a Python dictionary or JSON string.
 - Focus your search on specific fields like `endpoint` or `description`.
-- Access reports data and download them to use in further analysis
+- Access reports data and upload/download them to use in further analysis in the report section
 
 This makes it easier to programmatically explore and interact with the available API endpoints in ViaFoundry.
 

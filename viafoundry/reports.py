@@ -122,3 +122,96 @@ class Reports:
         """Raise a categorized error with a specific code and message."""
         logging.error(f"Error {code}: {message}")  # Log the error
         raise RuntimeError(f"Error {code}: {message}")
+    
+    def get_all_report_paths(self, report_id):
+        """Get unique report directories and attempt IDs for a specific report.
+
+        Args:
+            report_id (str): The ID of the report.
+
+        Returns:
+            list: A list of unique report directories.
+
+        Raises:
+            Exception: If the API call fails or no reports are found.
+        """
+        try:
+            # Define the API endpoint
+            endpoint = f"/api/run/v1/{report_id}/reports"
+
+            # Call the API to fetch report data
+            response = self.client.call("GET", endpoint)
+            reports = response.get("data", [])
+            
+            if not reports:
+                raise ValueError("No reports found.")
+
+            # Extract unique `routePath` entries
+            unique_paths = {entry.get("routePath") for entry in reports if "routePath" in entry}
+            return list(unique_paths)
+        except Exception as e:
+            self._raise_error(602, f"Failed to fetch report directories: {e}")
+    
+    def get_report_dirs(self, report_id):
+        """
+        Get possible directories following 'pubweb' in the routePath.
+
+        Args:
+            report_id (str): The ID of the report.
+
+        Returns:
+            list: A list of unique directories found after 'pubweb'.
+
+        Raises:
+            Exception: If the API call fails or no directories are found.
+        """
+        try:
+            # Get all routePaths for the report
+            all_paths = self.get_all_report_paths(report_id)
+
+            if not all_paths:
+                raise ValueError("No reports found.")
+
+            # Extract directories after 'pubweb'
+            report_dirs = set()
+            for route_path in all_paths:
+                if "pubweb/" in route_path:
+                    dir_after_pubweb = route_path.split("pubweb/")[-1]
+                    report_dirs.add(dir_after_pubweb)
+
+            if not report_dirs:
+                raise ValueError("No directories found after 'pubweb'.")
+
+            return  report_dirs
+        
+        except Exception as e:
+            self._raise_error(603, f"Failed to fetch possible directories: {e}")
+
+    def upload_report_file(self, report_id, file_path, dir=None):
+        """Upload a file to a specific report.
+
+        Args:
+            report_id (str): The report ID for the API.
+            file_path (str): The local path to the file being uploaded.
+            dir (str, optional): Directory name for organizing files.
+
+        Returns:
+            dict: Response from the server.
+
+        Raises:
+            Exception: If the file upload fails or no reports are found.
+        """
+        try:
+            report_paths = self.get_all_report_paths(report_id)
+            attempt_id = report_paths[0].split("/report-resources/")[1].split("/pubweb")[0]
+
+            upload_endpoint = f"/api/run/v1/{report_id}/reports/upload/{attempt_id}"
+            files = {"file": open(file_path, "rb")}
+            data = {"dir": dir} if dir else {}
+
+            # Perform the upload
+            response = self.client.call("POST", upload_endpoint, files=files, data=data)
+            return response
+        except Exception as e:
+            print(f"Exception Details: {e}")  # Debug additional details
+            self._raise_error(602, f"Failed to upload file to report: {e}")

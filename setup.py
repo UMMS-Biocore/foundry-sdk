@@ -2,10 +2,10 @@ from setuptools import setup, find_packages
 
 setup(
     name="viafoundry_sdk",
-    version="1.0.8",
+    version="1.0.9",
     description="A Python SDK and CLI for interacting with Via Foundry's API.",
-    author="Your Name",
-    author_email="your.email@example.com",
+    author="Alper Kucukural",
+    author_email="alper@viascientific.com",
     packages=find_packages(include=["viafoundry", "viafoundry.*"]),
     package_data={"viafoundry": ["bin/*.py"]},  # Include all .py files in `bin/`
     install_requires=[

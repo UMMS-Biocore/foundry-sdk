@@ -3,6 +3,7 @@ import os
 import requests
 import logging
 import io
+import mimetypes
 
 
 class Reports:
@@ -123,35 +124,44 @@ class Reports:
         logging.error(f"Error {code}: {message}")  # Log the error
         raise RuntimeError(f"Error {code}: {message}")
 
+
     def upload_report_file(self, report_id, file_path, dir=None):
-        """Upload a file to a specific report.
+        """
+        Upload a file to a specific report.
 
         Args:
-            report_id (str): The report ID for the API.
+            report_id (str): The ID of the report.
             file_path (str): The local path to the file being uploaded.
             dir (str, optional): Directory name for organizing files.
 
         Returns:
-            dict: Response from the server.
-
-        Raises:
-            Exception: If the file upload fails or no reports are found.
+            dict or str: Response from the server.
         """
         try:
+            # Fetch the latest attempt_id if not provided
             report_paths = self.get_all_report_paths(report_id)
             attempt_id = report_paths[0].split("/report-resources/")[1].split("/pubweb")[0]
 
+            # Construct the upload endpoint
             upload_endpoint = f"/api/run/v1/{report_id}/reports/upload/{attempt_id}"
-            files = {"file": open(file_path, "rb")}
-            data = {"dir": dir} if dir else {}
 
-            # Perform the upload
-            response = self.client.call("POST", upload_endpoint, files=files, data=data)
+            # Guess the MIME type of the file
+            mime_type, _ = mimetypes.guess_type(file_path)
+            if not mime_type:
+                mime_type = "application/octet-stream"  # Default to binary stream
+
+            # Open the file in binary mode
+            with open(file_path, "rb") as file:
+                files = {"file": (file_path.split("/")[-1], file, mime_type)}
+                data = {"dir": dir} if dir else {}
+
+                # Perform the upload
+                response = self.client.call("POST", upload_endpoint, files=files, data=data)
+
             return response
         except Exception as e:
-            print(f"Exception Details: {e}")  # Debug additional details
             self._raise_error(602, f"Failed to upload file to report: {e}")
-
+            
     def get_all_report_paths(self, report_id):
         """Get unique report directories and attempt IDs for a specific report.
 

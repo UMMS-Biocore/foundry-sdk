@@ -499,7 +499,7 @@ print(all_files)
 
 ### **10. Upload report files**
 
-Uploads a file to a specific report and organizes it in a specified directory.
+Uploads a file to a specific report and organizes it in a specified directory. Be sure to learn how to retrieve the upload directory from #11.
 
 #### Function Definition
 ```python
@@ -591,7 +591,7 @@ def get_all_report_paths(self, report_id):
 #### Example Usage
 ```python
 client = ViaFoundryClient()
-all_paths = client.reports.get_all_report_paths("578248d76b014cebafa23ad4f74f5689")
+all_paths = client.reports.get_all_report_paths("1")
 print("Route Paths:", all_paths)
 ```
 

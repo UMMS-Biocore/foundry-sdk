@@ -107,6 +107,7 @@ class ViaFoundryClient:
     def call(self, method, endpoint, params=None, data=None, files=None):
         """Send a request to a specific endpoint."""
         hostname = self.auth.hostname
+        #print(hostname)
         if not hostname:
             self._raise_error(201, "Hostname is not configured. Please run the configuration setup.")
 
@@ -114,6 +115,14 @@ class ViaFoundryClient:
         headers = self.auth.get_headers()
 
         try:
+            # Debug request details
+            #print(f"Request URL:{url}")
+            #print(f"Request Method:{method}")
+            #print(f"Request Params:{params}")
+            #print(f"Request Data:{data}")
+            #print(f"Request Files:{files}")
+            #print(f"Request Headers:{headers}")
+
             if files:
                 # Use 'data' for form-encoded fields and 'files' for file uploads
                 response = requests.request(

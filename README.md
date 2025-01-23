@@ -380,24 +380,31 @@ Manage processes with commands like listing, creating, updating, and deleting pr
 graph LR
     subgraph Processes
         direction LR
+        processesCLI[Processes]
         listProcessesCLI[List Processes]
         getProcessCLI[Get Process Details]
         getRevisionsCLI[Get Process Revisions]
         checkUsageCLI[Check Process Usage]
         duplicateProcessCLI[Duplicate Process]
-        createMenuGroupCLI[Create Menu Group]
-        listMenuGroupsCLI[List Menu Groups]
-        updateMenuGroupCLI[Update Menu Group]
+        menuCLI[Menus]
+        createMenuCLI[Create Menu]
+        listMenuCLI[List Menu]
+        updateMenuCLI[Update Menu]
         createProcessCLI[Create Process]
         updateProcessCLI[Update Process]
         deleteProcessCLI[Delete Process]
 
+        processesCLI --> createProcessCLI 
+        processesCLI --> listProcessesCLI
+        processesCLI --> updateProcessCLI
+        processesCLI --> deleteProcessCLI
         listProcessesCLI --> getProcessCLI
         getProcessCLI --> getRevisionsCLI
         getProcessCLI --> checkUsageCLI
         getProcessCLI --> duplicateProcessCLI
-        createMenuGroupCLI --> listMenuGroupsCLI
-        updateMenuGroupCLI --> listMenuGroupsCLI
+        menuCLI --> createMenuCLI
+        menuCLI --> listMenuCLI
+        menuCLI --> updateMenuCLI
     end
 ```
 

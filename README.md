@@ -102,6 +102,19 @@ The **ViaFoundry SDK and CLI** provide a powerful way to interact with ViaFoundr
 
 The CLI provides quick access to ViaFoundry functionalities without needing to write code. Below are some common commands.
 
+```mermaid
+graph 
+    subgraph CLI
+        cli[CLI Entry Point]
+        config[Configure CLI]
+        discover[Discover Endpoints]
+        call[Call API Endpoint]
+        reports[Reports Group]
+        process[Process Group]
+        session[Session Group]
+    end
+```
+
 ### **1. Configure the CLI or SDK**
 Authenticate with your ViaFoundry account:
 ```bash
@@ -237,6 +250,24 @@ Options:
 ### **4. Reports Management**
 Work with reports using the `foundry reports` command group.
 
+```mermaid
+graph LR
+    subgraph Reports
+        direction LR
+        fetch[Fetch Report Data]
+        listProcesses[List Processes in Report]
+        listFiles[List Files in Process]
+        downloadFile[Download a File]
+        uploadFile[Upload a File to Report]
+        getReportDirs[Get Report Directories]
+
+        fetch --> listProcesses
+        listProcesses --> listFiles
+        listFiles --> downloadFile
+        listFiles --> uploadFile
+        listFiles --> getReportDirs
+    end
+```
 #### **a. Fetch Report Data**
 Fetch JSON data for a report:
 ```bash
@@ -344,6 +375,31 @@ foundry call --endpoint /api/app/v1/call/1 --method POST --data '{"type": "stand
 ### **6. Process Management**
 
 Manage processes with commands like listing, creating, updating, and deleting processes.
+
+```mermaid
+graph LR
+    subgraph Processes
+        direction LR
+        listProcessesCLI[List Processes]
+        getProcessCLI[Get Process Details]
+        getRevisionsCLI[Get Process Revisions]
+        checkUsageCLI[Check Process Usage]
+        duplicateProcessCLI[Duplicate Process]
+        createMenuGroupCLI[Create Menu Group]
+        listMenuGroupsCLI[List Menu Groups]
+        updateMenuGroupCLI[Update Menu Group]
+        createProcessCLI[Create Process]
+        updateProcessCLI[Update Process]
+        deleteProcessCLI[Delete Process]
+
+        listProcessesCLI --> getProcessCLI
+        getProcessCLI --> getRevisionsCLI
+        getProcessCLI --> checkUsageCLI
+        getProcessCLI --> duplicateProcessCLI
+        createMenuGroupCLI --> listMenuGroupsCLI
+        updateMenuGroupCLI --> listMenuGroupsCLI
+    end
+```
 
 #### List All Processes
 ```bash

@@ -261,13 +261,13 @@ def get_report_dirs(ctx, report_id, reportid):
 
 @reports.command()
 @click.argument("report_id", required=False, type=str)
-@click.argument("file_path", required=False, type=click.Path(exists=True))
+@click.argument("local_file_path", required=False, type=click.Path(exists=True))
 @click.argument("remote_dir", required=False, type=str)
 @click.option("--reportID", type=str, help="Report ID (alternative to positional argument).")
-@click.option("--filePath", type=click.Path(exists=True), help="Local file path (alternative to positional argument).")
+@click.option("--localFilePath", type=click.Path(exists=True), help="Local file path (alternative to positional argument).")
 @click.option("--remoteDir", type=str, help="Directory name for organizing files (alternative to positional argument).")
 @click.pass_context
-def upload_report_file(ctx, report_id, file_path, remote_dir, reportid, filepath, remotedir):
+def upload_report_file(ctx, report_id, local_file_path, remote_dir, reportid, localfilepath, remotedir):
     """
     Upload a file to a report.
 
@@ -282,16 +282,16 @@ def upload_report_file(ctx, report_id, file_path, remote_dir, reportid, filepath
     try:
         # Fallback to options if arguments are not provided
         report_id = report_id or reportid
-        file_path = file_path or filepath
+        local_file_path = local_file_path or localfilepath
         remote_dir = remote_dir or remotedir
 
         # Ensure mandatory fields are present
-        if not file_path:
+        if not local_file_path:
             raise ValueError("File path is required. Provide it as an argument or use the --filePath option.")
         
         # Initialize client and call upload
         client = ctx.obj["client"]
-        response = client.reports.upload_report_file(report_id, file_path, remote_dir)
+        response = client.reports.upload_report_file(report_id, local_file_path, remote_dir)
         click.echo(f"File uploaded successfully: {response}")
     except Exception as e:
         click.echo(f"Failed to upload file: {e}", err=True)

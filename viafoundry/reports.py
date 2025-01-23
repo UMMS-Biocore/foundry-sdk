@@ -144,13 +144,13 @@ class Reports:
         raise RuntimeError(f"Error {code}: {message}")
 
 
-    def upload_report_file(self, report_id, file_path, dir=None):
+    def upload_report_file(self, report_id, local_file_path, dir=None):
         """
         Upload a file to a specific report.
 
         Args:
             report_id (str): The ID of the report.
-            file_path (str): The local path to the file being uploaded.
+            local_file_path (str): The local path to the file being uploaded.
             dir (str, optional): Directory name for organizing files.
 
         Returns:
@@ -165,13 +165,13 @@ class Reports:
             upload_endpoint = f"/api/run/v1/{report_id}/reports/upload/{attempt_id}"
 
             # Guess the MIME type of the file
-            mime_type, _ = mimetypes.guess_type(file_path)
+            mime_type, _ = mimetypes.guess_type(local_file_path)
             if not mime_type:
                 mime_type = "application/octet-stream"  # Default to binary stream
 
             # Open the file in binary mode
-            with open(file_path, "rb") as file:
-                files = {"file": (file_path.split("/")[-1], file, mime_type)}
+            with open(local_file_path, "rb") as file:
+                files = {"file": (local_file_path.split("/")[-1], file, mime_type)}
                 data = {"dir": dir} if dir else {}
 
                 # Perform the upload

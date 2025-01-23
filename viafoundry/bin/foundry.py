@@ -201,26 +201,26 @@ def list_files(ctx, report_id, process_name, reportid, processname):
 
 @reports.command()
 @click.argument("report_id", required=False)
-@click.argument("process_name", required=False)
-@click.argument("file_name", required=False)
+@click.argument("file_path", required=False)
+@click.argument("download_dir", required=False, default=os.getcwd())
 @click.option("--reportID", help="Report ID (alternative to positional argument).")
-@click.option("--processName", help="Process name (alternative to positional argument).")
-@click.option("--fileName", help="File name (alternative to positional argument).")
-@click.option("--download-dir", default=os.getcwd(), help="Directory to save the file.")
+@click.option("--filePath", help="File Path dir/filename in pubweb directory (alternative to positional argument).")
+@click.option("--downloadDir", default=os.getcwd(), help="Directory to save the file.")
+
 @click.pass_context
-def download_file(ctx, report_id, process_name, file_name, reportid, processname, filename, download_dir):
+def download_file(ctx, report_id, file_path, download_dir, reportid, filepath, downloaddir, ):
     """Download a file from a report."""
     client = ctx.obj["client"]
     report_id = report_id or reportid
-    process_name = process_name or processname
-    file_name = file_name or filename
-    if not report_id or not process_name or not file_name:
-        click.echo("Error: Report ID, Process Name, and File Name are required.", err=True)
+    download_dir = download_dir or downloaddir
+    file_path = file_path or filepath
+    if not report_id or not file_path :
+        click.echo("Error: Report ID, and File Name are required.", err=True)
         return
     try:
         report_data = client.reports.fetch_report_data(report_id)
-        file_path = client.reports.download_file(report_data, process_name, file_name, download_dir)
-        click.echo(f"File downloaded to: {file_path}")
+        download_file_path = client.reports.download_file(report_data, file_path, download_dir)
+        click.echo(f"File downloaded to: {download_file_path}")
     except Exception as e:
         click.echo(f"Error: {e}", err=True)
 

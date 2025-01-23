@@ -301,7 +301,7 @@ foundry reports list-processes --reportID=REPORT_ID
 ```
 
 #### **c. List Files for a Specific Process**
-List files for a specific process within a report:
+List files to get file paths for a specific process within a report:
 ```bash
 foundry reports list-files REPORT_ID PROCESS_NAME
 ```
@@ -315,17 +315,17 @@ foundry reports list-files --reportID=REPORT_ID --processName=PROCESS_NAME
 #### **d. Download a Specific File**
 Download a file from a report:
 ```bash
-foundry reports download-file REPORT_ID PROCESS_NAME FILE_NAME --download-dir /path/to/save
+foundry reports download-file REPORT_ID FILE_PATH --download-dir /path/to/save
 ```
 
 or
 
 ```bash
-foundry reports download-file --reportID=REPORT_ID --processName=PROCESS_NAME --fileName=FILE_NAME --download-dir /path/to/save
+foundry reports download-file --reportID=REPORT_ID --filePath=FILE_PATH --download-dir /path/to/save
 ```
 
 #### **e. List All Files in a Report**
-List all files across all processes in a report:
+List all files across all processes in a report.
 ```bash
 foundry reports list-all-files REPORT_ID
 ```
@@ -684,6 +684,17 @@ List all files for a specific process in the report:
 files = client.reports.get_file_names(report_data, process_name="myProcess")
 print(files)
 ```
+---
+
+### **Load a File**
+Download a specific file from the report:
+```python
+loaded_data = client.reports.load_file(
+    report_data,
+    file_path="dir/example.txt"
+)
+print(loaded_data)
+```
 
 ---
 
@@ -692,8 +703,7 @@ Download a specific file from the report:
 ```python
 client.reports.download_file(
     report_data,
-    process_name="myProcess",
-    file_name="example.txt",
+    file_path="dir/example.txt",
     download_dir="/path/to/save"
 )
 ```
@@ -714,12 +724,12 @@ Uploads a file to a specific report and organizes it in a specified directory. B
 
 #### Function Definition
 ```python
-def upload_report_file(self, report_id, file_path, dir=None):
+def upload_report_file(self, report_id, local_file_path, dir=None):
     \"\"\"Upload a file to a specific report.
 
     Args:
         report_id (str): The ID of the report.
-        file_path (str): The local path to the file being uploaded.
+        local_file_path (str): The local path to the file being uploaded.
         dir (str, optional): Directory name for organizing files.
 
     Returns:
@@ -732,7 +742,7 @@ def upload_report_file(self, report_id, file_path, dir=None):
 client = ViaFoundryClient()
 response = client.reports.upload_report_file(
     report_id="1",
-    file_path="/path/to/your/file.csv",
+    local_file_path="/path/to/your/file.csv",
     dir="summary"
 )
 print("Upload Response:", response)

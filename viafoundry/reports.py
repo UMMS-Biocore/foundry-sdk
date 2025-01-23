@@ -11,10 +11,26 @@ class Reports:
         self.client = client
 
     def fetch_report_data(self, report_id):
-        """Fetch JSON data for a report."""
+        """Fetch JSON data for a report and inject `file_dir` into all entries."""
         try:
             endpoint = f"/api/run/v1/{report_id}/reports/"
-            return self.client.call("GET", endpoint)
+            report_data = self.client.call("GET", endpoint)
+
+            # Recursively add `file_dir` to all entries
+            def add_file_path(data):
+                for entry in data:
+                    # Inject `file_dir` into the current entry
+                    entry["file_path"] = (
+                        entry["routePath"].split("pubweb/")[-1]
+                        if "pubweb/" in entry["routePath"]
+                        else None
+                    )
+                    # Recursively process children if they exist
+                    if "children" in entry and isinstance(entry["children"], list):
+                        add_file_path(entry["children"])
+
+            add_file_path(report_data.get("data", []))
+            return report_data
         except Exception as e:
             self._raise_error(601, f"Failed to fetch report data for report ID '{report_id}': {e}")
 
@@ -34,11 +50,12 @@ class Reports:
             if not processes:
                 self._raise_error(603, f"Process '{process_name}' not found.")
             files = pd.DataFrame(processes[0]["children"])
-            return files[["id", "processName", "name", "extension", "fileSize", "routePath"]]
+    
+            return files[["id", "processName", "name", "extension", "file_path", "fileSize", "routePath"]]
         except Exception as e:
             self._raise_error(604, f"Failed to get file names for process '{process_name}': {e}")
 
-    def load_file(self, json_data, process_name, file_name, sep="\t"):
+    def load_file(self, json_data, file_path, sep="\t"):
         """
         Load or download a file from a process.
         :param json_data: JSON data containing the report.
@@ -48,11 +65,12 @@ class Reports:
         :return: DataFrame if the file is tabular, or None for non-tabular files.
         """
         try:
-            files = self.get_file_names(json_data, process_name)
-            file_details = files[files["name"] == file_name]
+            files = self.get_all_files(json_data)
+            file_details = files[files["file_path"] == file_path]
+            file_name = os.path.basename(file_path)
 
             if file_details.empty:
-                self._raise_error(605, f"File '{file_name}' not found for process '{process_name}'.")
+                self._raise_error(605, f"File '{file_name}' not found in the files of this report.")
 
             file_url = self.client.auth.hostname + file_details["routePath"].iloc[0]
             file_extension = file_details["extension"].iloc[0].lower()
@@ -73,14 +91,15 @@ class Reports:
         except Exception as e:
             self._raise_error(607, f"Failed to load file '{file_name}': {e}")
 
-    def download_file(self, report_data, process_name, file_name, download_dir=os.getcwd()):
+    def download_file(self, report_data, file_path, download_dir=os.getcwd()):
         """Download a file from the API."""
         try:
-            files = self.get_file_names(report_data, process_name)
-            file_details = files[files["name"] == file_name]
+            files = self.get_all_files(report_data)
+            file_details = files[files["file_path"] == file_path]
+            file_name = os.path.basename(file_path)
 
             if file_details.empty:
-                self._raise_error(608, f"File '{file_name}' not found in process '{process_name}'.")
+                self._raise_error(608, f"File '{file_name}' not found in the files of this report.")
 
             file_url = self.client.auth.hostname + file_details["routePath"].iloc[0]
             output_path = os.path.join(download_dir, file_name)
@@ -114,7 +133,7 @@ class Reports:
                 self._raise_error(611, "No files found in the report.")
 
             return pd.DataFrame(all_files)[
-                ["id", "processName", "name", "extension", "fileSize", "routePath"]
+                ["id", "processName", "file_path", "name", "extension", "fileSize", "routePath"]
             ]
         except Exception as e:
             self._raise_error(612, f"Failed to extract all files from report: {e}")

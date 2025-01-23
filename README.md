@@ -103,15 +103,23 @@ The **ViaFoundry SDK and CLI** provide a powerful way to interact with ViaFoundr
 The CLI provides quick access to ViaFoundry functionalities without needing to write code. Below are some common commands.
 
 ```mermaid
-graph 
+graph LR
     subgraph CLI
-        cli[CLI Entry Point]
+        direction LR
+        client[CLI Entry Point]
         config[Configure CLI]
         discover[Discover Endpoints]
-        call[Call API Endpoint]
-        reports[Reports Group]
+        callAPI[Call API]
+        anyAPI[Call Any API Endpoint]
+        reports[Report Group]
         process[Process Group]
-        session[Session Group]
+
+        client --> config 
+        client --> discover
+        client --> callAPI
+        callAPI --> anyAPI
+        callAPI --> reports
+        callAPI --> process
     end
 ```
 

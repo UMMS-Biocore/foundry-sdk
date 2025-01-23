@@ -2,6 +2,7 @@ import requests
 from viafoundry.auth import Auth
 from requests.exceptions import RequestException, MissingSchema
 from viafoundry.reports import Reports
+from viafoundry.process import Process
 import logging
 
 # Configure logging
@@ -15,6 +16,9 @@ class ViaFoundryClient:
             logging.info("Authentication initialized successfully.")
             self.reports = Reports(self)
             logging.info("Reports functionality initialized successfully.")
+            self.process = Process(self)  # Add Process integration
+            logging.info("Process functionality initialized successfully.")
+
         except Exception as e:
             logging.error("Initialization error", exc_info=True)
             self._raise_error(101, "Failed to initialize authentication. Check your configuration file.")

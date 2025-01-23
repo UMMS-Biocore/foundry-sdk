@@ -7,7 +7,7 @@ packages = ["viafoundry"]
 
 [project]
 name = "viafoundry_sdk"
-version = "1.0.10"
+version = "1.0.11"
 authors = [{ name = "Alper Kucukural", email = "alper@viascientific.com" }]
 description = "A Python SDK and CLI tool for interacting with ViaFoundry APIs."
 readme = "README.md"

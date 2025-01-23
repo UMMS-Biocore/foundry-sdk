@@ -10,7 +10,6 @@ import os
 # Configure logging
 logging.basicConfig(filename="viafoundry_errors.log", level=logging.ERROR, format="%(asctime)s - %(levelname)s - %(message)s")
 
-
 @click.group(invoke_without_command=True)
 @click.option('--version', '-v', is_flag=True, help="Show the version of the ViaFoundry CLI.")
 @click.option('--config', type=click.Path(), help="Path to a custom configuration file.")
@@ -297,6 +296,226 @@ def upload_report_file(ctx, report_id, file_path, remote_dir, reportid, filepath
     except Exception as e:
         click.echo(f"Failed to upload file: {e}", err=True)
 
+@cli.group()
+@click.pass_context
+def process(ctx):
+    """Commands related to process."""
+    pass
+
+@process.command()
+@click.pass_context
+def list_processes(ctx):
+    """List all processes."""
+    client = ctx.obj["client"]
+    processes = client.process.list_processes()
+    click.echo(processes)
+
+@process.command()
+@click.argument("process_id", required=False, type=str)
+@click.option("--processID", type=str, help="Process ID (alternative to positional argument).")
+@click.pass_context
+def get_process(ctx, process_id, processid):
+    """Get details of a specific process."""
+    client = ctx.obj["client"]
+    process_id = process_id or processid
+    process_info = client.process.get_process(process_id)
+    click.echo(process_info)
+
+@process.command()
+@click.argument("process_id", required=False, type=str)
+@click.option("--processID", type=str, help="Process ID (alternative to positional argument).")
+@click.pass_context
+def get_revisions(ctx, process_id, processid):
+    """Get revisions for a specific process."""
+    client = ctx.obj["client"]
+    process_id = process_id or processid
+    revisions = client.process.get_process_revisions(process_id)
+    click.echo(revisions)
+
+@process.command()
+@click.argument("process_id", required=False, type=str)
+@click.option("--processID", type=str, help="Process ID (alternative to positional argument).")
+@click.pass_context
+def check_usage(ctx, process_id, processid):
+    """Check if a process is used in pipelines or runs."""
+    client = ctx.obj["client"]
+    process_id = process_id or processid
+    usage = client.process.check_process_usage(process_id)
+    click.echo(usage)
+
+@process.command()
+@click.argument("process_id", required=False, type=str)
+@click.option("--processID", type=str, help="Process ID (alternative to positional argument).")
+@click.pass_context
+def duplicate_process(ctx, process_id, processid):
+    """Duplicate a process."""
+    client = ctx.obj["client"]
+    process_id = process_id or processid
+    response = client.process.duplicate_process(process_id)
+    click.echo(response)
+
+@process.command()
+@click.argument("menu_name", required=False, type=str)
+@click.option("--menuName", type=str, help="Menu Name (alternative to positional argument).")
+@click.pass_context
+def create_menu_group(ctx, menu_name, menuname):
+    """Create a new menu group."""
+    client = ctx.obj["client"]
+    menu_name = menu_name or menuname
+    response = client.process.create_menu_group(menu_name)
+    click.echo(response)
+
+@process.command()
+@click.argument("process_data", required=False, type=click.File('r'))
+@click.option("--processData", type=click.File('r'), help="Process Data (alternative to positional argument).")
+
+@click.pass_context
+def create_process(ctx, process_data, processdata):
+    """Create a new process from a JSON file."""
+    client = ctx.obj["client"]
+    process_data = process_data or processdata
+    process_data = json.load(process_data)
+    response = client.process.create_process(process_data)
+    click.echo(response)
+
+@process.command()
+@click.argument("menu_group_id", required=False, type=int)
+@click.argument("menu_name", required=False, type=str)
+@click.option("--menuGroupID", type=int, help="Menu Group ID (alternative to positional argument).")
+@click.option("--menuName", type=str, help="Menu Name (alternative to positional argument).")
+@click.pass_context
+def update_menu_group(ctx, menu_group_id, menu_name, menugroupid, menuname):
+    """Update an existing menu group."""
+    client = ctx.obj["client"]
+    menu_group_id = menu_group_id or menugroupid
+    menu_name = menu_name or menuname
+
+    if not menu_group_id or not menu_name:
+        click.echo("Error: Both Menu Group ID and Menu Name are required.", err=True)
+        return
+
+    response = client.process.update_menu_group(menu_group_id, menu_name)
+    click.echo(response)
+
+
+@process.command()
+@click.argument("process_id", required=False, type=str)
+@click.argument("process_data", required=False, type=click.File('r'))
+@click.option("--processID", type=str, help="Process ID (alternative to positional argument).")
+@click.option("--processData", type=click.File('r'), help="Process Data (alternative to positional argument).")
+@click.pass_context
+def update_process(ctx, process_id, process_data, processid, processdata):
+    """Update an existing process."""
+    client = ctx.obj["client"]
+    process_id = process_id or processid
+    process_data = process_data or processdata
+
+    if not process_id or not process_data:
+        click.echo("Error: Both Process ID and Process Data are required.", err=True)
+        return
+
+    process_data = json.load(process_data)
+    response = client.process.update_process(process_id, process_data)
+    click.echo(response)
+
+
+@process.command()
+@click.argument("process_id", required=False, type=str)
+@click.option("--processID", type=str, help="Process ID (alternative to positional argument).")
+@click.pass_context
+def delete_process(ctx, process_id, processid):
+    """Delete an existing process."""
+    client = ctx.obj["client"]
+    process_id = process_id or processid
+
+    if not process_id:
+        click.echo("Error: Process ID is required.", err=True)
+        return
+
+    response = client.process.delete_process(process_id)
+    click.echo(response)
+
+
+@process.command()
+@click.argument("pipeline_id", required=False, type=str)
+@click.option("--pipelineID", type=str, help="Pipeline ID (alternative to positional argument).")
+@click.pass_context
+def get_pipeline_parameters(ctx, pipeline_id, pipelineid):
+    """Get parameters for a pipeline."""
+    client = ctx.obj["client"]
+    pipeline_id = pipeline_id or pipelineid
+
+    if not pipeline_id:
+        click.echo("Error: Pipeline ID is required.", err=True)
+        return
+
+    response = client.process.get_pipeline_parameters(pipeline_id)
+    click.echo(response)
+
+
+@process.command()
+@click.pass_context
+def list_parameters(ctx):
+    """List all parameters."""
+    client = ctx.obj["client"]
+    response = client.process.list_parameters()
+    click.echo(response)
+
+
+@process.command()
+@click.argument("parameter_data", required=False, type=click.File('r'))
+@click.option("--parameterData", type=click.File('r'), help="Parameter Data (alternative to positional argument).")
+@click.pass_context
+def create_parameter(ctx, parameter_data, parameterdata):
+    """Create a new parameter."""
+    client = ctx.obj["client"]
+    parameter_data = parameter_data or parameterdata
+
+    if not parameter_data:
+        click.echo("Error: Parameter Data is required.", err=True)
+        return
+
+    parameter_data = json.load(parameter_data)
+    response = client.process.create_parameter(parameter_data)
+    click.echo(response)
+
+
+@process.command()
+@click.argument("parameter_id", required=False, type=str)
+@click.argument("parameter_data", required=False, type=click.File('r'))
+@click.option("--parameterID", type=str, help="Parameter ID (alternative to positional argument).")
+@click.option("--parameterData", type=click.File('r'), help="Parameter Data (alternative to positional argument).")
+@click.pass_context
+def update_parameter(ctx, parameter_id, parameter_data, parameterid, parameterdata):
+    """Update an existing parameter."""
+    client = ctx.obj["client"]
+    parameter_id = parameter_id or parameterid
+    parameter_data = parameter_data or parameterdata
+
+    if not parameter_id or not parameter_data:
+        click.echo("Error: Both Parameter ID and Parameter Data are required.", err=True)
+        return
+
+    parameter_data = json.load(parameter_data)
+    response = client.process.update_parameter(parameter_id, parameter_data)
+    click.echo(response)
+
+
+@process.command()
+@click.argument("parameter_id", required=False, type=str)
+@click.option("--parameterID", type=str, help="Parameter ID (alternative to positional argument).")
+@click.pass_context
+def delete_parameter(ctx, parameter_id, parameterid):
+    """Delete an existing parameter."""
+    client = ctx.obj["client"]
+    parameter_id = parameter_id or parameterid
+
+    if not parameter_id:
+        click.echo("Error: Parameter ID is required.", err=True)
+        return
+
+    response = client.process.delete_parameter(parameter_id)
+    click.echo(response)
 if __name__ == "__main__":
     try:
         cli()

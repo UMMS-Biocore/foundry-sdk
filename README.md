@@ -1,4 +1,4 @@
-# ViaFoundry SDK and CLI (v1.0.10)
+# ViaFoundry SDK and CLI (v1.0.11)
 
 The **ViaFoundry SDK and CLI** provide a powerful way to interact with ViaFoundry APIs. Whether you're a developer integrating with the API or a user looking for a simple command-line interface, this package has you covered.
 
@@ -7,7 +7,7 @@ The **ViaFoundry SDK and CLI** provide a powerful way to interact with ViaFoundr
 ## Table of Contents
 - [Installation](#installation)
 - [CLI Usage](#cli-usage)
-  - [1. Configure the SDK](#1-configure-the-sdk)
+  - [1. Configure the CLI or SDK](#1-configure-the-cli-or-sdk)
   - [2. Discover Endpoints](#2-discover-endpoints)
     - [Usage](#usage)
     - [Filtering Capabilities](#filtering-capabilities)
@@ -25,6 +25,21 @@ The **ViaFoundry SDK and CLI** provide a powerful way to interact with ViaFoundr
     - [Get directories in a Report to upload Files](#f-get-directories-in-a-report-to-upload-files)
     - [Upload a File to a Report](#g-upload-a-file-to-a-report)
   - [5. Example: Launch an App](#5-example-launch-an-app)
+  - [6. Process Management](#6-process-management)
+    - [List All Processes](#list-all-processes)
+    - [Get Process Details](#get-Process-Details)
+    - [Get Revisions for a Process](#get-Revisions-for-a-process)
+    - [Check Process Usage](#check-process-usage)
+    - [Duplicate a Process](#duplicate-a-process)
+    - [Create a Menu Group](#create-a-menu-group)
+    - [Create a Process](#create-a-process)
+    - [Update a Process](#update-a-process)
+    - [Delete a Process](#delete-a-process)
+    - [Get Parameters for a Pipeline](#get-parameters-for-a-pipeline)
+    - [List All Parameters](#list-all-parameters)
+    - [Create a Parameter](#create-a-parameter)
+    - [Update a Parameter](#update-a-parameter)
+    - [Delete a Parameter](#delete-a-parameter)
 - [Logging](#logging)
 - [SDK Usage](#sdk-usage)
   - [1. Import the SDK](#1-import-the-sdk)
@@ -35,14 +50,30 @@ The **ViaFoundry SDK and CLI** provide a powerful way to interact with ViaFoundr
     - [Free-Text Search](#free-text-search-sdk)
     - [Key-Value Search](#key-value-search-sdk)
     - [JSON Output](#json-output-sdk)
-  - [5. Fetch Report Data](#5-fetch-report-data)
-  - [6. List Processes in a Report](#6-list-processes-in-a-report)
-  - [7. List Files for a Process](#7-list-files-for-a-process)
-  - [8. Download a File](#8-download-a-file)
-  - [9. List All Files in a Report](#9-list-all-files-in-a-report)
-  - [10. Upload report files](#10-upload-report-files)
-  - [11. Get report dirs](#11-get-report-dirs)
-  - [12. Get all report paths](#12-get-all-report-paths)
+  - [5. Reports Managment](#5-reports-management)
+    - [Fetch Report Data](#fetch-report-data)
+    - [List Processes in a Report](#list-processes-in-a-report)
+    - [List Files for a Process](#list-files-for-a-process)
+    - [Download a File](#download-a-file)
+    - [List All Files in a Report](#list-all-files-in-a-report)
+    - [Upload report files](#upload-report-files)
+    - [Get report dirs](#get-report-dirs)
+    - [Get all report paths](#get-all-report-paths)
+  - [6. Process Managment SDK](#6-process-management-sdk)
+    - [List All Processes](#list-all-processes-sdk)
+    - [Get Process Details](#get-Process-Details-sdk)
+    - [Get Revisions for a Process](#get-Revisions-for-a-process-sdk)
+    - [Check Process Usage](#check-process-usage-sdk)
+    - [Duplicate a Process](#duplicate-a-process-sdk)
+    - [Create a Menu Group](#create-a-menu-group-sdk)
+    - [Create a Process](#create-a-process-sdk)
+    - [Update a Process](#update-a-process-sdk)
+    - [Delete a Process](#delete-a-process-sdk)
+    - [Get Parameters for a Pipeline](#get-parameters-for-a-pipeline-sdk)
+    - [List All Parameters](#list-all-parameters-sdk)
+    - [Create a Parameter](#create-a-parameter-sdk)
+    - [Update a Parameter](#update-a-parameter-sdk)
+    - [Delete a Parameter](#delete-a-parameter-sdk)
   - [Summary](#summary)
 
 ---
@@ -71,7 +102,7 @@ The **ViaFoundry SDK and CLI** provide a powerful way to interact with ViaFoundr
 
 The CLI provides quick access to ViaFoundry functionalities without needing to write code. Below are some common commands.
 
-### **1. Configure the SDK**
+### **1. Configure the CLI or SDK**
 Authenticate with your ViaFoundry account:
 ```bash
 foundry configure
@@ -310,6 +341,113 @@ Send a POST request to a specific endpoint to launch an app:
 ```bash
 foundry call --endpoint /api/app/v1/call/1 --method POST --data '{"type": "standalone"}'
 ```
+### **6. Process Management**
+
+Manage processes with commands like listing, creating, updating, and deleting processes.
+
+#### List All Processes
+```bash
+foundry process list-processes
+```
+#### Get Process Details
+```bash
+foundry process get-process <process_id>
+# Or
+foundry process get-process --processID <process_id>
+```
+
+#### Get Revisions for a Process
+```bash
+foundry process get-revisions <process_id>
+# Or
+foundry process get-revisions --processID <process_id>
+```
+
+#### Check Process Usage
+```bash
+foundry process check-usage <process_id>
+# Or
+foundry process check-usage --processID <process_id>
+```
+
+#### Duplicate a Process
+```bash
+foundry process duplicate-process <process_id>
+# Or
+foundry process duplicate-process --processID <process_id>
+```
+
+#### Create a Menu Group
+```bash
+foundry process create-menu-group <menu_name>
+# Or
+foundry process create-menu-group --menuName <menu_name>
+```
+
+#### Create a Process
+Pass the process data as a JSON file:
+```bash
+foundry process create-process <path_to_json>
+# Or
+foundry process create-process --processData <path_to_json>
+```
+
+#### Update a Menu Group
+```bash
+foundry process update-menu-group <menu_group_id> <menu_name>
+# Or
+foundry process update-menu-group --menuGroupID <menu_group_id> --menuName <menu_name>
+```
+
+#### Update a Process
+Pass the updated process data as a JSON file:
+```bash
+foundry process update-process <process_id> <path_to_json>
+# Or
+foundry process update-process --processID <process_id> --processData <path_to_json>
+```
+
+#### Delete a Process
+```bash
+foundry process delete-process <process_id>
+# Or
+foundry process delete-process --processID <process_id>
+```
+
+#### Get Parameters for a Pipeline
+```bash
+foundry process get-pipeline-parameters <pipeline_id>
+# Or
+foundry process get-pipeline-parameters --pipelineID <pipeline_id>
+```
+
+#### List All Parameters
+```bash
+foundry process list-parameters
+```
+
+#### Create a Parameter
+Pass the parameter data as a JSON file:
+```bash
+foundry process create-parameter <path_to_json>
+# Or
+foundry process create-parameter --parameterData <path_to_json>
+```
+
+#### Update a Parameter
+Pass the updated parameter data as a JSON file:
+```bash
+foundry process update-parameter <parameter_id> <path_to_json>
+# Or
+foundry process update-parameter --parameterID <parameter_id> --parameterData <path_to_json>
+```
+
+#### Delete a Parameter
+```bash
+foundry process delete-parameter <parameter_id>
+# Or
+foundry process delete-parameter --parameterID <parameter_id>
+```
 
 ---
 
@@ -450,7 +588,9 @@ filtered_endpoints_json = client.discover(search="logs", as_json=True)
 print(filtered_endpoints_json)
 ```
 
-### **5. Fetch Report Data**
+### **5. Report section**
+
+### **Fetch Report Data**
 Fetch JSON data for a specific report:
 ```python
 report_data = client.reports.fetch_report_data(report_id="12345")
@@ -458,7 +598,7 @@ report_data = client.reports.fetch_report_data(report_id="12345")
 
 ---
 
-### **6. List Processes in a Report**
+### **List Processes in a Report**
 List unique processes in the fetched report data:
 ```python
 process_names = client.reports.get_process_names(report_data)
@@ -467,7 +607,7 @@ print("Processes:", process_names)
 
 ---
 
-### **7. List Files for a Process**
+### **List Files for a Process**
 List all files for a specific process in the report:
 ```python
 files = client.reports.get_file_names(report_data, process_name="myProcess")
@@ -476,7 +616,7 @@ print(files)
 
 ---
 
-### **8. Download a File**
+### **Download a File**
 Download a specific file from the report:
 ```python
 client.reports.download_file(
@@ -489,7 +629,7 @@ client.reports.download_file(
 
 ---
 
-### **9. List All Files in a Report**
+### **List All Files in a Report**
 List all files across all processes in the report:
 ```python
 all_files = client.reports.get_all_files(report_data)
@@ -497,7 +637,7 @@ print(all_files)
 ```
 ---
 
-### **10. Upload report files**
+### **Upload report files**
 
 Uploads a file to a specific report and organizes it in a specified directory. Be sure to learn how to retrieve the upload directory from #11.
 
@@ -534,7 +674,7 @@ Upload Response: OK
 
 ---
 
-### **11. Get report dirs**
+### **Get report dirs**
 
 Fetches unique directories from a report after the `pubweb` segment in the `routePath`.
 
@@ -571,7 +711,7 @@ print("Directories:", directories)
 
 ---
 
-### **12. Get all report paths**
+### **Get all report paths**
 
 Fetches all `routePath` values from a specific report.
 
@@ -603,6 +743,129 @@ Route Paths: [
     "/report-resources/dir1/pubweb/kallisto_count"
 ]
 ```
+
+---
+
+### **6. Process Management SDK**
+
+#### Initialize the SDK
+```python
+from viafoundry.client import ViaFoundryClient
+
+client = ViaFoundryClient(config_path="path_to_config.json")
+process = client.process
+```
+
+#### List All Processes SDK
+```python
+processes = process.list_processes()
+print(processes)
+```
+
+#### Get Process Details SDK
+```python
+process_details = process.get_process(process_id="12345")
+print(process_details)
+```
+
+#### Get Process Revisions SDK
+```python
+revisions = process.get_process_revisions(process_id="12345")
+print(revisions)
+```
+
+#### Check Process Usage SDK
+```python
+usage = process.check_process_usage(process_id="12345")
+print(usage)
+```
+
+#### Duplicate a Process SDK
+```python
+duplicate_response = process.duplicate_process(process_id="12345")
+print(duplicate_response)
+```
+
+#### Create a Menu Group SDK
+```python
+response = process.create_menu_group(name="New Menu Group")
+print(response)
+```
+
+#### Create a Process SDK
+```python
+process_data = {
+    "name": "Example Process",
+    "summary": "An example process",
+    "menuGroupId": 1,
+    # Additional fields...
+}
+response = process.create_process(process_data=process_data)
+print(response)
+```
+
+#### Update a Menu Group SDK
+```python
+response = process.update_menu_group(menu_group_id=1, name="Updated Menu Group")
+print(response)
+```
+
+#### Update a Process SDK
+```python
+updated_data = {
+    "name": "Updated Process",
+    "summary": "Updated description",
+    # Additional fields...
+}
+response = process.update_process(process_id="12345", process_data=updated_data)
+print(response)
+```
+
+#### Delete a Process SDK
+```python
+response = process.delete_process(process_id="12345")
+print(response)
+```
+
+#### Get Pipeline Parameters SDK
+```python
+parameters = process.get_pipeline_parameters(pipeline_id="67890")
+print(parameters)
+```
+
+#### List All Parameters SDK
+```python
+parameters = process.list_parameters()
+print(parameters)
+```
+
+#### Create a Parameter SDK
+```python
+parameter_data = {
+    "name": "Parameter Name",
+    "qualifier": "file",
+    "fileType": "fasta",
+}
+response = process.create_parameter(parameter_data=parameter_data)
+print(response)
+```
+
+#### Update a Parameter SDK
+```python
+updated_parameter = {
+    "name": "Updated Parameter Name",
+    "qualifier": "file",
+    "fileType": "fastq",
+}
+response = process.update_parameter(parameter_id="123", parameter_data=updated_parameter)
+print(response)
+```
+
+#### Delete a Parameter SDK
+```python
+response = process.delete_parameter(parameter_id="123")
+print(response)
+```
 ---
 
 ## Summary
@@ -611,6 +874,7 @@ The enhanced `discover` function in the SDK allows you to:
 - Retrieve results as a Python dictionary or JSON string.
 - Focus your search on specific fields like `endpoint` or `description`.
 - Access reports data and upload/download them to use in further analysis in the report section
+- Access process section and add remove parameters, processes and versions of the processes.
 
 This makes it easier to programmatically explore and interact with the available API endpoints in ViaFoundry.
 

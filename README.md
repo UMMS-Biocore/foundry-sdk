@@ -553,6 +553,8 @@ Example `config.json`:
 }
 ```
 
+If you want to enable recording session while working in J
+
 If you already authenticated using CLI or want to use default file (~/.viaenv). You can use like below.
 
 ```python

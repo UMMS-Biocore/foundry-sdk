@@ -10,11 +10,18 @@ logging.basicConfig(filename="viafoundry_errors.log", level=logging.ERROR, forma
 
 
 class ViaFoundryClient:
-    def __init__(self, config_path=None):
+    def __init__(self, config_path=None, enable_session_history=False):
+        """
+        Initialize the ViaFoundryClient.
+
+        Args:
+            config_path (str, optional): Path to the configuration file.
+            enable_session_history (bool, optional): Enable or disable session history for reports. Defaults to False.
+        """
         try:
             self.auth = Auth(config_path)
             logging.info("Authentication initialized successfully.")
-            self.reports = Reports(self)
+            self.reports = Reports(self, enable_session_history=enable_session_history)
             logging.info("Reports functionality initialized successfully.")
             self.process = Process(self)  # Add Process integration
             logging.info("Process functionality initialized successfully.")

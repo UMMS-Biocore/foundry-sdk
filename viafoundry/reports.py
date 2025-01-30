@@ -4,11 +4,21 @@ import requests
 import logging
 import io
 import mimetypes
+from datetime import datetime
+from IPython import get_ipython
 
 
 class Reports:
-    def __init__(self, client):
+    def __init__(self, client, enable_session_history=False):
+        """
+        Initialize the Reports.
+
+        Args:
+            enable_session_history (bool, optional): Enable or disable session history for reports. Defaults to False.
+        """
         self.client = client
+        self.enable_session_history = enable_session_history
+
 
     def fetch_report_data(self, report_id):
         """Fetch JSON data for a report and inject `file_dir` into all entries."""
@@ -244,3 +254,54 @@ class Reports:
         
         except Exception as e:
             self._raise_error(603, f"Failed to fetch possible directories: {e}")
+
+    def upload_session_history(self, report_id, dir=None):
+        """
+        Upload the session history as a standalone file.
+
+        Args:
+            report_id (str): The ID of the report.
+            dir (str, optional): Directory name for organizing files.
+
+        Returns:
+            dict or str: Response from the server.
+        """
+        try:
+            if not self.enable_session_history:
+                raise RuntimeError("Session history functionality is disabled.")
+
+            # Prepare session history file
+            history_file_path = self.prepare_session_history()
+            # Upload session history only if the flag is enabled
+            if self.enable_session_history:
+                self.upload_report_file(report_id, history_file_path, dir)
+            
+            # Clean up the temporary history file
+            os.remove(history_file_path)
+
+        except Exception as e:
+            raise Exception(f"Failed to upload session history: {e}")
+
+    def prepare_session_history(self):
+        """
+        Prepare session history from the current Jupyter or IPython session.
+
+        Returns:
+            str: Path to the saved history file.
+        """
+        try:
+            ipython = get_ipython()
+            if ipython is None:
+                raise EnvironmentError("Session history can only be prepared in IPython or Jupyter environments.")
+
+            # Generate a filename with the current date and time
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            history_file_path = f"session_history_{timestamp}.txt"
+
+            # Save the session history to the file
+            with open(history_file_path, "w") as history_file:
+                ipython.magic(f"history -f {history_file_path}")
+
+            return history_file_path
+        except Exception as e:
+            raise Exception(f"Failed to prepare session history: {e}")

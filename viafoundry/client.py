@@ -127,12 +127,12 @@ class ViaFoundryClient:
 
         try:
             # Debug request details
-            #print(f"Request URL:{url}")
-            #print(f"Request Method:{method}")
-            #print(f"Request Params:{params}")
-            #print(f"Request Data:{data}")
-            #print(f"Request Files:{files}")
-            #print(f"Request Headers:{headers}")
+            # print(f"Request URL:{url}")
+            # print(f"Request Method:{method}")
+            # print(f"Request Params:{params}")
+            # print(f"Request Data:{data}")
+            # print(f"Request Files:{files}")
+            # print(f"Request Headers:{headers}")
 
             if files:
                 # Use 'data' for form-encoded fields and 'files' for file uploads
@@ -146,9 +146,6 @@ class ViaFoundryClient:
                 )
 
             response.raise_for_status()
-
-            if not response.text.strip():
-                self._raise_error(204, f"Empty response from server for endpoint: {endpoint}.")
             if "application/json" not in response.headers.get("Content-Type", ""):
                 #self._raise_error(203, f"Non-JSON response received from endpoint: {endpoint}. Content: {response.text}")
                 return response.text.strip()  # Return raw text response

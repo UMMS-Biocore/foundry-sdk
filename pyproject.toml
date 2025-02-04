@@ -36,3 +36,10 @@ foundry = "viafoundry.bin.foundry:cli"
 Homepage = "https://github.com/viascienific/viafoundry-sdk"
 Documentation = "https://github.com/viascientific/viafoundry-sdk#readme"
 Issues = "https://github.com/viascientific/viafoundry-sdk/issues"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-mock>=3.12.0",
+    "pytest-cov>=4.1.0",
+]

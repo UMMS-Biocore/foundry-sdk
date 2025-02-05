@@ -4,19 +4,33 @@ from requests.exceptions import RequestException, MissingSchema
 from viafoundry.reports import Reports
 from viafoundry.process import Process
 import logging
+from typing import Optional, Union, Dict
 
 # Configure logging
 logging.basicConfig(filename="viafoundry_errors.log", level=logging.ERROR, format="%(asctime)s - %(levelname)s - %(message)s")
 
 
 class ViaFoundryClient:
-    def __init__(self, config_path=None, enable_session_history=False):
+    """
+    A client for interacting with the ViaFoundry API.
+
+    Attributes:
+        auth (Auth): The authentication handler.
+        reports (Reports): The reports handler.
+        process (Process): The process handler.
+        endpoints_cache (Optional[Dict]): Cache for discovered endpoints.
+    """
+
+    def __init__(self, config_path: Optional[str] = None, enable_session_history: bool = False) -> None:
         """
-        Initialize the ViaFoundryClient.
+        Initializes the ViaFoundryClient.
 
         Args:
-            config_path (str, optional): Path to the configuration file.
-            enable_session_history (bool, optional): Enable or disable session history for reports. Defaults to False.
+            config_path (Optional[str]): Path to the configuration file. Defaults to None.
+            enable_session_history (bool): Whether to enable session history for reports. Defaults to False.
+
+        Raises:
+            RuntimeError: If initialization fails.
         """
         try:
             self.auth = Auth(config_path)
@@ -31,8 +45,20 @@ class ViaFoundryClient:
             self._raise_error(101, "Failed to initialize authentication. Check your configuration file.")
         self.endpoints_cache = None  # Cache for discovered endpoints
 
-    def configure_auth(self, hostname, username, password, identity_type="1", redirect_uri="http://localhost/user"):
-        """Configure authentication by setting up the token."""
+    def configure_auth(self, hostname: str, username: str, password: str, identity_type: str = "1", redirect_uri: str = "http://localhost/user") -> None:
+        """
+        Configures authentication by setting up the token.
+
+        Args:
+            hostname (str): The hostname for authentication.
+            username (str): The username for authentication.
+            password (str): The password for authentication.
+            identity_type (str): The identity type. Defaults to "1".
+            redirect_uri (str): The redirect URI. Defaults to "http://localhost/user".
+
+        Raises:
+            RuntimeError: If authentication configuration fails.
+        """
         try:
             self.auth.configure(hostname, username, password, identity_type, redirect_uri)
         except MissingSchema:
@@ -42,17 +68,19 @@ class ViaFoundryClient:
         except Exception:
             self._raise_error(999, "An unexpected error occurred while configuring authentication.")
 
-    def discover(self, search=None, as_json=False):
+    def discover(self, search: Optional[str] = None, as_json: bool = False) -> Union[Dict, str]:
         """
-        Fetch all available endpoints from Swagger. Optionally filter endpoints by a search string
-        or key=value format, and return the result in JSON format.
-        
+        Fetches all available endpoints from Swagger.
+
         Args:
-            search (str): Filter endpoints containing a search string or in `key=value` format.
-            as_json (bool): Return the output as a JSON-formatted string instead of a Python dictionary.
-        
+            search (Optional[str]): Filter endpoints containing a search string or in `key=value` format.
+            as_json (bool): Whether to return the output as a JSON-formatted string. Defaults to False.
+
         Returns:
-            dict or str: A dictionary or JSON-formatted string of endpoints.
+            Union[Dict, str]: A dictionary or JSON-formatted string of endpoints.
+
+        Raises:
+            RuntimeError: If endpoint discovery fails.
         """
         if self.endpoints_cache:
             endpoints = self.endpoints_cache
@@ -115,10 +143,24 @@ class ViaFoundryClient:
 
         return filtered_endpoints
 
-    def call(self, method, endpoint, params=None, data=None, files=None):
-        """Send a request to a specific endpoint."""
+    def call(self, method: str, endpoint: str, params: Optional[Dict] = None, data: Optional[Dict] = None, files: Optional[Dict] = None) -> Union[Dict, str]:
+        """
+        Sends a request to a specific endpoint.
+
+        Args:
+            method (str): The HTTP method to use for the request.
+            endpoint (str): The endpoint to call.
+            params (Optional[Dict]): Query parameters for the request. Defaults to None.
+            data (Optional[Dict]): Data to send in the request body. Defaults to None.
+            files (Optional[Dict]): Files to upload. Defaults to None.
+
+        Returns:
+            Union[Dict, str]: The response data as a dictionary or raw text.
+
+        Raises:
+            RuntimeError: If the request fails.
+        """
         hostname = self.auth.hostname
-        #print(hostname)
         if not hostname:
             self._raise_error(201, "Hostname is not configured. Please run the configuration setup.")
 
@@ -126,14 +168,6 @@ class ViaFoundryClient:
         headers = self.auth.get_headers()
 
         try:
-            # Debug request details
-            # print(f"Request URL:{url}")
-            # print(f"Request Method:{method}")
-            # print(f"Request Params:{params}")
-            # print(f"Request Data:{data}")
-            # print(f"Request Files:{files}")
-            # print(f"Request Headers:{headers}")
-
             if files:
                 # Use 'data' for form-encoded fields and 'files' for file uploads
                 response = requests.request(
@@ -147,7 +181,6 @@ class ViaFoundryClient:
 
             response.raise_for_status()
             if "application/json" not in response.headers.get("Content-Type", ""):
-                #self._raise_error(203, f"Non-JSON response received from endpoint: {endpoint}. Content: {response.text}")
                 return response.text.strip()  # Return raw text response
 
             return response.json()
@@ -162,8 +195,16 @@ class ViaFoundryClient:
         except Exception:
             self._raise_error(999, "An unexpected error occurred while calling the endpoint.")
 
-    def _handle_http_error(self, response):
-        """Categorize HTTP errors based on status codes."""
+    def _handle_http_error(self, response: requests.Response) -> None:
+        """
+        Categorizes HTTP errors based on status codes.
+
+        Args:
+            response (requests.Response): The response object from the request.
+
+        Raises:
+            RuntimeError: If an HTTP error occurs.
+        """
         status_code = response.status_code
         if status_code == 400:
             self._raise_error(302, "Bad Request: Check the request parameters or payload.")
@@ -178,7 +219,16 @@ class ViaFoundryClient:
         else:
             self._raise_error(307, f"Unexpected HTTP error occurred. Status code: {status_code}.")
 
-    def _raise_error(self, code, message):
-        """Raise a categorized error with a specific code and message."""
+    def _raise_error(self, code: int, message: str) -> None:
+        """
+        Raises a categorized error with a specific code and message.
+
+        Args:
+            code (int): The error code.
+            message (str): The error message.
+
+        Raises:
+            RuntimeError: The categorized error.
+        """
         logging.error(f"Error {code}: {message}")  # Log the error
         raise RuntimeError(f"Error {code}: {message}")

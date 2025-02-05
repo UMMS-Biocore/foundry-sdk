@@ -2,25 +2,36 @@ import os
 import json
 import requests
 from datetime import datetime, timedelta
+from typing import Dict, Optional
 
 DEFAULT_CONFIG_PATH = os.path.expanduser("~/.viaenv")
 
 class Auth:
-    def __init__(self, config_path=None):
+    def __init__(self, config_path: Optional[str] = None) -> None:
+        """Initialize the Auth class.
+
+        Args:
+            config_path (str, optional): Path to the configuration file. Defaults to None.
+        """
         self.config_path = config_path or DEFAULT_CONFIG_PATH
         self.config = self.load_config()
         self.hostname = self.config.get("hostname")  # Initialize hostname
         self.bearer_token = self.config.get("bearer_token")  # Bearer token
 
-    def load_config(self):
-        """Load configuration from the config file."""
+    def load_config(self) -> Dict:
+        """Load configuration from the config file.
+
+        Returns:
+            Dict: The loaded configuration.
+        """
         if os.path.exists(self.config_path):
             with open(self.config_path, "r") as f:
                 return json.load(f)
         return {}
 
-    def save_config(self):
-        """Save hostname and bearer token to the config file."""
+    def save_config(self) -> None:
+        """Save hostname and bearer token to the config file.
+        """
         config = {
             "hostname": self.hostname,
             "bearer_token": self.bearer_token  # Save only the bearer token
@@ -28,8 +39,16 @@ class Auth:
         with open(self.config_path, "w") as f:
             json.dump(config, f, indent=4)
 
-    def configure(self, hostname, username=None, password=None, identity_type=1, redirect_uri="https://viafoundry.com/user"):
-        """Prompt user for credentials if necessary and authenticate."""
+    def configure(self, hostname: str, username: Optional[str] = None, password: Optional[str] = None, identity_type: int = 1, redirect_uri: str = "https://viafoundry.com/user") -> None:
+        """Prompt user for credentials if necessary and authenticate.
+
+        Args:
+            hostname (str): The hostname for authentication.
+            username (str, optional): The username for authentication. Defaults to None.
+            password (str, optional): The password for authentication. Defaults to None.
+            identity_type (int, optional): The identity type. Defaults to 1.
+            redirect_uri (str, optional): The redirect URI. Defaults to "https://viafoundry.com/user".
+        """
         self.hostname = hostname
         if not username or not password:
             username = input("Username: ")
@@ -37,13 +56,22 @@ class Auth:
 
         # Authenticate and retrieve the cookie token
         cookie_token = self.login(username, password, identity_type, redirect_uri)
-        
         # Use cookie token to get bearer token
         self.bearer_token = self.get_bearer_token(cookie_token)
         self.save_config()
 
-    def login(self, username, password, identity_type=1, redirect_uri="https://viafoundry.com/user"):
-        """Authenticate and get the token from the Set-Cookie header."""
+    def login(self, username: str, password: str, identity_type: int = 1, redirect_uri: str = "https://viafoundry.com/user") -> str:
+        """Authenticate and get the token from the Set-Cookie header.
+
+        Args:
+            username (str): The username for authentication.
+            password (str): The password for authentication.
+            identity_type (int, optional): The identity type. Defaults to 1.
+            redirect_uri (str, optional): The redirect URI. Defaults to "https://viafoundry.com/user".
+
+        Returns:
+            str: The authentication token.
+        """
         if not self.hostname:
             raise ValueError("Hostname is not set. Please configure the SDK.")
         
@@ -75,12 +103,24 @@ class Auth:
         
         return token
 
-    def calculate_expiration_date(self):
-        """Calculate an expiration date one month from now."""
+    def calculate_expiration_date(self) -> str:
+        """Calculate an expiration date one month from now.
+
+        Returns:
+            str: The expiration date in YYYY-MM-DD format.
+        """
         return (datetime.now() + timedelta(days=30)).strftime("%Y-%m-%d")
 
-    def get_bearer_token(self, cookie_token, name="token"):
-        """Request a bearer token using the existing cookie token."""
+    def get_bearer_token(self, cookie_token: str, name: str = "token") -> str:
+        """Request a bearer token using the existing cookie token.
+
+        Args:
+            cookie_token (str): The cookie token for authentication.
+            name (str, optional): The name of the token. Defaults to "token".
+
+        Returns:
+            str: The bearer token.
+        """
         if not self.hostname:
             raise ValueError("Hostname is missing. Please configure the SDK.")
 
@@ -99,8 +139,12 @@ class Auth:
         
         return bearer_token
 
-    def get_headers(self):
-        """Return headers with the bearer token."""
+    def get_headers(self) -> Dict:
+        """Return headers with the bearer token.
+
+        Returns:
+            Dict: Headers containing the bearer token.
+        """
         if not self.bearer_token:
             raise ValueError("Bearer token is missing. Please configure the SDK.")
         return {"Authorization": f"Bearer {self.bearer_token}"}

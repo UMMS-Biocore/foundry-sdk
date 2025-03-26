@@ -6,6 +6,7 @@ from viafoundry import __version__  # Import the version
 import json
 import logging
 import os
+from typing import Optional
 
 # Configure logging
 logging.basicConfig(filename="viafoundry_errors.log", level=logging.ERROR, format="%(asctime)s - %(levelname)s - %(message)s")
@@ -14,8 +15,14 @@ logging.basicConfig(filename="viafoundry_errors.log", level=logging.ERROR, forma
 @click.option('--version', '-v', is_flag=True, help="Show the version of the ViaFoundry CLI.")
 @click.option('--config', type=click.Path(), help="Path to a custom configuration file.")
 @click.pass_context
-def cli(ctx, version, config):
-    """ViaFoundry CLI for configuration, endpoint discovery, and API requests."""
+def cli(ctx: click.Context, version: bool, config: str) -> None:
+    """ViaFoundry CLI for configuration, endpoint discovery, and API requests.
+
+    Args:
+        ctx (click.Context): Click context object.
+        version (bool): Flag to show version information.
+        config (str): Path to custom configuration file.
+    """
     if version:
         click.echo(f"ViaFoundry CLI version {__version__}")
         return
@@ -36,8 +43,18 @@ def cli(ctx, version, config):
 @click.option('--identity-type', default=1, type=int, help="Identity type (default: 1)")
 @click.option('--redirect-uri', default="https://viafoundry.com/user", help="Redirect URI (default: https://viafoundry.com/user)")
 @click.pass_context
-def configure(ctx, hostname, username, password, identity_type=1, redirect_uri="https://viafoundry.com/user"):
-    """Configure the SDK."""
+def configure(ctx: click.Context, hostname: str, username: str, password: str, 
+           identity_type: int = 1, redirect_uri: str = "https://viafoundry.com/user") -> None:
+    """Configure the SDK with authentication details.
+
+    Args:
+        ctx (click.Context): Click context object.
+        hostname (str): API hostname URL.
+        username (str): Login username.
+        password (str): Login password.
+        identity_type (int, optional): Identity type. Defaults to 1.
+        redirect_uri (str, optional): Redirect URI. Defaults to "https://viafoundry.com/user".
+    """
     auth = ctx.obj['auth']
     try:
         auth.configure(hostname, username, password, identity_type, redirect_uri)
@@ -50,8 +67,14 @@ def configure(ctx, hostname, username, password, identity_type=1, redirect_uri="
 @click.option('--as-json', is_flag=True, help="Output the endpoints in JSON format.")
 @click.option('--search', default=None, help="Search term to filter endpoints. Use freely or as 'key=value'.")
 @click.pass_context
-def discover(ctx, as_json, search):
-    """List all available API endpoints with optional filtering."""
+def discover(ctx: click.Context, as_json: bool, search: Optional[str]) -> None:
+    """List all available API endpoints with optional filtering.
+
+    Args:
+        ctx (click.Context): Click context object.
+        as_json (bool): Flag to output in JSON format.
+        search (str, optional): Search term to filter endpoints.
+    """
     client = ctx.obj['client']
     try:
         endpoints = client.discover()  # Assume this returns a dictionary {endpoint: methods}.
@@ -123,8 +146,16 @@ def discover(ctx, as_json, search):
 @click.option('--params', default=None, help="Query parameters as JSON.")
 @click.option('--data', default=None, help="Request body as JSON.")
 @click.pass_context
-def call(ctx, endpoint, method, params, data):
-    """Call a specific API endpoint."""
+def call(ctx: click.Context, endpoint: str, method: str, params: Optional[str], data: Optional[str]) -> None:
+    """Call a specific API endpoint.
+
+    Args:
+        ctx (click.Context): Click context object.
+        endpoint (str): The API endpoint to call.
+        method (str): HTTP method to use.
+        params (str, optional): Query parameters as JSON string.
+        data (str, optional): Request body as JSON string.
+    """
     client = ctx.obj['client']
     try:
         params = json.loads(params) if params else None
@@ -139,16 +170,26 @@ def call(ctx, endpoint, method, params, data):
 
 @cli.group()
 @click.pass_context
-def reports(ctx):
-    """Commands related to reports."""
+def reports(ctx: click.Context) -> None:
+    """Commands related to reports.
+
+    Args:
+        ctx (click.Context): Click context object.
+    """
     pass
 
 @reports.command()
 @click.argument("report_id", required=False)
 @click.option("--reportID", help="Report ID (alternative to positional argument).")
 @click.pass_context
-def fetch(ctx, report_id, reportid):
-    """Fetch JSON data for a report."""
+def fetch(ctx: click.Context, report_id: Optional[str], reportid: Optional[str]) -> None:
+    """Fetch JSON data for a report.
+
+    Args:
+        ctx (click.Context): Click context object.
+        report_id (str, optional): Report ID as positional argument.
+        reportid (str, optional): Report ID as named argument.
+    """
     client = ctx.obj["client"]
     report_id = report_id or reportid
     if not report_id:
@@ -164,8 +205,14 @@ def fetch(ctx, report_id, reportid):
 @click.argument("report_id", required=False)
 @click.option("--reportID", help="Report ID (alternative to positional argument).")
 @click.pass_context
-def list_processes(ctx, report_id, reportid):
-    """List unique processes in a report."""
+def list_processes(ctx: click.Context, report_id: Optional[str], reportid: Optional[str]) -> None:
+    """List unique processes in a report.
+
+    Args:
+        ctx (click.Context): Click context object.
+        report_id (str, optional): Report ID as positional argument.
+        reportid (str, optional): Report ID as named argument.
+    """
     client = ctx.obj["client"]
     report_id = report_id or reportid
     if not report_id:
@@ -184,8 +231,17 @@ def list_processes(ctx, report_id, reportid):
 @click.option("--reportID", help="Report ID (alternative to positional argument).")
 @click.option("--processName", help="Process name (alternative to positional argument).")
 @click.pass_context
-def list_files(ctx, report_id, process_name, reportid, processname):
-    """List files for a specific process."""
+def list_files(ctx: click.Context, report_id: Optional[str], process_name: Optional[str], 
+              reportid: Optional[str], processname: Optional[str]) -> None:
+    """List files for a specific process.
+
+    Args:
+        ctx (click.Context): Click context object.
+        report_id (str, optional): Report ID as positional argument.
+        process_name (str, optional): Process name as positional argument.
+        reportid (str, optional): Report ID as named argument.
+        processname (str, optional): Process name as named argument.
+    """
     client = ctx.obj["client"]
     report_id = report_id or reportid
     process_name = process_name or processname
@@ -298,14 +354,22 @@ def upload_report_file(ctx, report_id, local_file_path, remote_dir, reportid, lo
 
 @cli.group()
 @click.pass_context
-def process(ctx):
-    """Commands related to process."""
+def process(ctx: click.Context) -> None:
+    """Commands related to process.
+
+    Args:
+        ctx (click.Context): Click context object.
+    """
     pass
 
 @process.command()
 @click.pass_context
-def list_processes(ctx):
-    """List all processes."""
+def list_processes(ctx: click.Context) -> None:
+    """List all processes.
+
+    Args:
+        ctx (click.Context): Click context object.
+    """
     client = ctx.obj["client"]
     processes = client.process.list_processes()
     click.echo(processes)
@@ -336,42 +400,63 @@ def get_revisions(ctx, process_id, processid):
 @click.argument("process_id", required=False, type=str)
 @click.option("--processID", type=str, help="Process ID (alternative to positional argument).")
 @click.pass_context
-def check_usage(ctx, process_id, processid):
-    """Check if a process is used in pipelines or runs."""
+def check_usage(ctx: click.Context, process_id: Optional[str], processid: Optional[str]) -> None:
+    """Check if a process is used in pipelines or runs.
+
+    Args:
+        ctx (click.Context): Click context object.
+        process_id (str, optional): Process ID as positional argument.
+        processid (str, optional): Process ID as named argument.
+    """
     client = ctx.obj["client"]
-    process_id = process_id or processid
-    usage = client.process.check_process_usage(process_id)
-    click.echo(usage)
+    usage_info = client.process.check_usage(process_id)
+    click.echo(usage_info)
 
 @process.command()
 @click.argument("process_id", required=False, type=str)
 @click.option("--processID", type=str, help="Process ID (alternative to positional argument).")
 @click.pass_context
-def duplicate_process(ctx, process_id, processid):
-    """Duplicate a process."""
+def duplicate_process(ctx: click.Context, process_id: Optional[str], processid: Optional[str]) -> None:
+    """Duplicate a process.
+
+    Args:
+        ctx (click.Context): Click context object.
+        process_id (str, optional): Process ID as positional argument.
+        processid (str, optional): Process ID as named argument.
+    """
     client = ctx.obj["client"]
-    process_id = process_id or processid
-    response = client.process.duplicate_process(process_id)
-    click.echo(response)
+    duplicated_process = client.process.duplicate_process(process_id)
+    click.echo(duplicated_process)
 
 @process.command()
 @click.argument("menu_name", required=False, type=str)
-@click.option("--menuName", type=str, help="Menu Name (alternative to positional argument).")
+@click.option("--menuName", type=str, help="Menu name (alternative to positional argument).")
 @click.pass_context
-def create_menu_group(ctx, menu_name, menuname):
-    """Create a new menu group."""
+def create_menu_group(ctx: click.Context, menu_name: Optional[str], menuname: Optional[str]) -> None:
+    """Create a new menu group.
+
+    Args:
+        ctx (click.Context): Click context object.
+        menu_name (str, optional): Menu name as positional argument.
+        menuname (str, optional): Menu name as named argument.
+    """
     client = ctx.obj["client"]
-    menu_name = menu_name or menuname
-    response = client.process.create_menu_group(menu_name)
-    click.echo(response)
+    new_menu_group = client.process.create_menu_group(menu_name)
+    click.echo(new_menu_group)
 
 @process.command()
 @click.argument("process_data", required=False, type=click.File('r'))
 @click.option("--processData", type=click.File('r'), help="Process Data (alternative to positional argument).")
 
 @click.pass_context
-def create_process(ctx, process_data, processdata):
-    """Create a new process from a JSON file."""
+def create_process(ctx: click.Context, process_data: Optional[click.File], processdata: Optional[click.File]) -> None:
+    """Create a new process from a JSON file.
+
+    Args:
+        ctx (click.Context): Click context object.
+        process_data (click.File, optional): JSON data for the new process.
+        processdata (click.File, optional): JSON data for the new process as named argument.
+    """
     client = ctx.obj["client"]
     process_data = process_data or processdata
     process_data = json.load(process_data)
@@ -384,8 +469,16 @@ def create_process(ctx, process_data, processdata):
 @click.option("--menuGroupID", type=int, help="Menu Group ID (alternative to positional argument).")
 @click.option("--menuName", type=str, help="Menu Name (alternative to positional argument).")
 @click.pass_context
-def update_menu_group(ctx, menu_group_id, menu_name, menugroupid, menuname):
-    """Update an existing menu group."""
+def update_menu_group(ctx: click.Context, menu_group_id: Optional[int], menu_name: Optional[str], menugroupid: Optional[int], menuname: Optional[str]) -> None:
+    """Update an existing menu group.
+
+    Args:
+        ctx (click.Context): Click context object.
+        menu_group_id (int, optional): ID of the menu group to update.
+        menu_name (str, optional): New name for the menu group.
+        menugroupid (int, optional): ID of the menu group to update as named argument.
+        menuname (str, optional): New name for the menu group as named argument.
+    """
     client = ctx.obj["client"]
     menu_group_id = menu_group_id or menugroupid
     menu_name = menu_name or menuname
@@ -404,8 +497,16 @@ def update_menu_group(ctx, menu_group_id, menu_name, menugroupid, menuname):
 @click.option("--processID", type=str, help="Process ID (alternative to positional argument).")
 @click.option("--processData", type=click.File('r'), help="Process Data (alternative to positional argument).")
 @click.pass_context
-def update_process(ctx, process_id, process_data, processid, processdata):
-    """Update an existing process."""
+def update_process(ctx: click.Context, process_id: Optional[str], process_data: Optional[click.File], processid: Optional[str], processdata: Optional[click.File]) -> None:
+    """Update an existing process.
+
+    Args:
+        ctx (click.Context): Click context object.
+        process_id (str, optional): ID of the process to update.
+        process_data (click.File, optional): JSON data for the updated process.
+        processid (str, optional): ID of the process to update as named argument.
+        processdata (click.File, optional): JSON data for the updated process as named argument.
+    """
     client = ctx.obj["client"]
     process_id = process_id or processid
     process_data = process_data or processdata
@@ -423,8 +524,14 @@ def update_process(ctx, process_id, process_data, processid, processdata):
 @click.argument("process_id", required=False, type=str)
 @click.option("--processID", type=str, help="Process ID (alternative to positional argument).")
 @click.pass_context
-def delete_process(ctx, process_id, processid):
-    """Delete an existing process."""
+def delete_process(ctx: click.Context, process_id: Optional[str], processid: Optional[str]) -> None:
+    """Delete an existing process.
+
+    Args:
+        ctx (click.Context): Click context object.
+        process_id (str, optional): ID of the process to delete.
+        processid (str, optional): ID of the process to delete as named argument.
+    """
     client = ctx.obj["client"]
     process_id = process_id or processid
 
@@ -440,8 +547,14 @@ def delete_process(ctx, process_id, processid):
 @click.argument("pipeline_id", required=False, type=str)
 @click.option("--pipelineID", type=str, help="Pipeline ID (alternative to positional argument).")
 @click.pass_context
-def get_pipeline_parameters(ctx, pipeline_id, pipelineid):
-    """Get parameters for a pipeline."""
+def get_pipeline_parameters(ctx: click.Context, pipeline_id: Optional[str], pipelineid: Optional[str]) -> None:
+    """Get parameters for a pipeline.
+
+    Args:
+        ctx (click.Context): Click context object.
+        pipeline_id (str, optional): ID of the pipeline to get parameters for.
+        pipelineid (str, optional): ID of the pipeline to get parameters for as named argument.
+    """
     client = ctx.obj["client"]
     pipeline_id = pipeline_id or pipelineid
 
@@ -455,8 +568,12 @@ def get_pipeline_parameters(ctx, pipeline_id, pipelineid):
 
 @process.command()
 @click.pass_context
-def list_parameters(ctx):
-    """List all parameters."""
+def list_parameters(ctx: click.Context) -> None:
+    """List all parameters.
+
+    Args:
+        ctx (click.Context): Click context object.
+    """
     client = ctx.obj["client"]
     response = client.process.list_parameters()
     click.echo(response)
@@ -466,8 +583,14 @@ def list_parameters(ctx):
 @click.argument("parameter_data", required=False, type=click.File('r'))
 @click.option("--parameterData", type=click.File('r'), help="Parameter Data (alternative to positional argument).")
 @click.pass_context
-def create_parameter(ctx, parameter_data, parameterdata):
-    """Create a new parameter."""
+def create_parameter(ctx: click.Context, parameter_data: Optional[click.File], parameterdata: Optional[click.File]) -> None:
+    """Create a new parameter.
+
+    Args:
+        ctx (click.Context): Click context object.
+        parameter_data (click.File, optional): Data for the new parameter.
+        parameterdata (click.File, optional): Data for the new parameter as named argument.
+    """
     client = ctx.obj["client"]
     parameter_data = parameter_data or parameterdata
 
@@ -486,8 +609,16 @@ def create_parameter(ctx, parameter_data, parameterdata):
 @click.option("--parameterID", type=str, help="Parameter ID (alternative to positional argument).")
 @click.option("--parameterData", type=click.File('r'), help="Parameter Data (alternative to positional argument).")
 @click.pass_context
-def update_parameter(ctx, parameter_id, parameter_data, parameterid, parameterdata):
-    """Update an existing parameter."""
+def update_parameter(ctx: click.Context, parameter_id: Optional[str], parameter_data: Optional[click.File], parameterid: Optional[str], parameterdata: Optional[click.File]) -> None:
+    """Update an existing parameter.
+
+    Args:
+        ctx (click.Context): Click context object.
+        parameter_id (str, optional): ID of the parameter to update.
+        parameter_data (click.File, optional): New data for the parameter.
+        parameterid (str, optional): ID of the parameter to update as named argument.
+        parameterdata (click.File, optional): New data for the parameter as named argument.
+    """
     client = ctx.obj["client"]
     parameter_id = parameter_id or parameterid
     parameter_data = parameter_data or parameterdata
@@ -505,8 +636,14 @@ def update_parameter(ctx, parameter_id, parameter_data, parameterid, parameterda
 @click.argument("parameter_id", required=False, type=str)
 @click.option("--parameterID", type=str, help="Parameter ID (alternative to positional argument).")
 @click.pass_context
-def delete_parameter(ctx, parameter_id, parameterid):
-    """Delete an existing parameter."""
+def delete_parameter(ctx: click.Context, parameter_id: Optional[str], parameterid: Optional[str]) -> None:
+    """Delete an existing parameter.
+
+    Args:
+        ctx (click.Context): Click context object.
+        parameter_id (str, optional): ID of the parameter to delete.
+        parameterid (str, optional): ID of the parameter to delete as named argument.
+    """
     client = ctx.obj["client"]
     parameter_id = parameter_id or parameterid
 

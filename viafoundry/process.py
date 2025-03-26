@@ -1,133 +1,338 @@
 class Process:
-    def __init__(self, client):
+    """
+    A class for managing processes in the ViaFoundry API.
+
+    FIXME: Circular dependency with ViaFoundryClient, using a string here - but need to refactor
+    FIXME: Raise specific errors for better handling
+
+    Attributes:
+        client (ViaFoundryClient): The client instance to interact with the API.
+    """
+
+    def __init__(self, client) -> None:
+        """
+        Initializes the Process class.
+
+        Args:
+            client (ViaFoundryClient): The client instance to interact with.
+        """
         self.client = client
 
-    def list_processes(self):
-        """List all existing processes."""
+    def list_processes(self) -> dict:
+        """
+        Lists all existing processes.
+
+        Returns:
+            dict: A dictionary of existing processes.
+
+        Raises:
+            Exception: If listing processes fails.
+
+        FIXME:
+            Subclass and raise a more specific exception
+        """
         try:
-            endpoint = f"/api/v1/process/"
+            endpoint = "/api/v1/process/"
             return self.client.call("GET", endpoint)
         except Exception as e:
             raise Exception("Error 1001: Failed to list processes") from e
 
-    def get_process(self, process_id):
-        """Retrieve information about a specific process."""
+    def get_process(self, process_id: str) -> dict:
+        """
+        Retrieves information about a specific process.
+
+        Args:
+            process_id (str): The ID of the process to retrieve.
+
+        Returns:
+            dict: The process information.
+
+        Raises:
+            Exception: If retrieving the process fails.
+        """
         try:
             endpoint = f"/api/v1/process/{process_id}"
             return self.client.call("GET", endpoint)
         except Exception as e:
-            raise Exception(f"Error 1002: Failed to retrieve process with ID {process_id}") from e
+            raise Exception(
+                f"Error 1002: Failed to retrieve process with ID {process_id}"
+            ) from e
 
-    def get_process_revisions(self, process_id):
-        """Get all revisions for the given process."""
+    def get_process_revisions(self, process_id: str) -> dict:
+        """
+        Gets all revisions for the given process.
+
+        Args:
+            process_id (str): The ID of the process to get revisions for.
+
+        Returns:
+            dict: A dictionary of revisions for the process.
+
+        Raises:
+            Exception: If retrieving revisions fails.
+        """
         try:
             endpoint = f"/api/v1/process/{process_id}/revisions"
-            return self.client.call("GET", endpoint) 
+            return self.client.call("GET", endpoint)
         except Exception as e:
-            raise Exception(f"Error 1003: Failed to get revisions for process ID {process_id}") from e
+            raise Exception(
+                f"Error 1003: Failed to get revisions for process ID {process_id}"
+            ) from e
 
-    def check_process_usage(self, process_id):
-        """Check if a process is used in pipelines or runs."""
+    def check_process_usage(self, process_id: str) -> dict:
+        """
+        Checks if a process is used in pipelines or runs.
+
+        Args:
+            process_id (str): The ID of the process to check.
+
+        Returns:
+            dict: Information about the process usage.
+
+        Raises:
+            Exception: If checking usage fails.
+        """
         try:
             endpoint = f"/api/v1/process/{process_id}/is-used"
             return self.client.call("GET", endpoint)
         except Exception as e:
-            raise Exception(f"Error 1004: Failed to check usage for process ID {process_id}") from e
+            raise Exception(
+                f"Error 1004: Failed to check usage for process ID {process_id}"
+            ) from e
 
-    def duplicate_process(self, process_id):
-        """Duplicate a process."""
+    def duplicate_process(self, process_id: str) -> dict:
+        """
+        Duplicates a process.
+
+        Args:
+            process_id (str): The ID of the process to duplicate.
+
+        Returns:
+            dict: Information about the duplicated process.
+
+        Raises:
+            Exception: If duplicating the process fails.
+        """
         try:
             endpoint = f"/api/v1/process/{process_id}/duplicate"
             return self.client.call("POST", endpoint)
         except Exception as e:
-            raise Exception(f"Error 1005: Failed to duplicate process with ID {process_id}") from e
+            raise Exception(
+                f"Error 1005: Failed to duplicate process with ID {process_id}"
+            ) from e
 
-    def create_menu_group(self, name):
-        """Create a new menu group."""
+    def create_menu_group(self, name: str) -> dict:
+        """
+        Creates a new menu group.
+
+        Args:
+            name (str): The name of the menu group to create.
+
+        Returns:
+            dict: Information about the created menu group.
+
+        Raises:
+            Exception: If creating the menu group fails.
+        """
         try:
             payload = {"name": name}
             endpoint = f"/api/v1/menu-group/process"
             return self.client.call("POST", endpoint, data=payload)
         except Exception as e:
-            raise Exception(f"Error 1006: Failed to create menu group with name '{name}'") from e
+            raise Exception(
+                f"Error 1006: Failed to create menu group with name '{name}'"
+            ) from e
 
-    def list_menu_groups(self):
-        """List all menu groups."""
+    def list_menu_groups(self) -> dict:
+        """
+        Lists all menu groups.
+
+        Returns:
+            dict: A dictionary of menu groups.
+
+        Raises:
+            Exception: If listing menu groups fails.
+        """
         try:
-            endpoint = f"/api/v1/menu-group/process"
+            endpoint = "/api/v1/menu-group/process"
             return self.client.call("GET", endpoint)
         except Exception as e:
             raise Exception("Error 1007: Failed to list menu groups") from e
 
-    def update_menu_group(self, menu_group_id, name):
-        """Update a menu group."""
+    def update_menu_group(self, menu_group_id: str, name: str) -> dict:
+        """
+        Updates a menu group.
+
+        Args:
+            menu_group_id (str): The ID of the menu group to update.
+            name (str): The new name for the menu group.
+
+        Returns:
+            dict: Information about the updated menu group.
+
+        Raises:
+            Exception: If updating the menu group fails.
+        """
         try:
             payload = {"name": name}
-            endpoint =  f"/api/v1/menu-group/process/{menu_group_id}"
+            endpoint = f"/api/v1/menu-group/process/{menu_group_id}"
             return self.client.call("POST", endpoint, data=payload)
         except Exception as e:
-            raise Exception(f"Error 1008: Failed to update menu group with ID {menu_group_id}") from e
+            raise Exception(
+                f"Error 1008: Failed to update menu group with ID {menu_group_id}"
+            ) from e
 
-    def create_process(self, process_data):
-        """Create a new process."""
+    def create_process(self, process_data: dict) -> dict:
+        """
+        Creates a new process.
+
+        Args:
+            process_data (dict): The data for the new process.
+
+        Returns:
+            dict: Information about the created process.
+
+        Raises:
+            Exception: If creating the process fails.
+        """
         try:
-            endpoint =  f"/api/v1/process"
+            endpoint = "/api/v1/process"
             return self.client.call("POST", endpoint, data=process_data)
         except Exception as e:
             raise Exception("Error 1009: Failed to create a new process") from e
 
-    def update_process(self, process_id, process_data):
-        """Update an existing process."""
+    def update_process(self, process_id: str, process_data: dict) -> dict:
+        """
+        Updates an existing process.
+
+        Args:
+            process_id (str): The ID of the process to update.
+            process_data (dict): The updated data for the process.
+
+        Returns:
+            dict: Information about the updated process.
+
+        Raises:
+            Exception: If updating the process fails.
+        """
         try:
             endpoint = f"/api/v1/process/{process_id}"
             return self.client.call("PUT", endpoint, data=process_data)
         except Exception as e:
-            raise Exception(f"Error 1010: Failed to update process with ID {process_id}") from e
+            raise Exception(
+                f"Error 1010: Failed to update process with ID {process_id}"
+            ) from e
 
-    def delete_process(self, process_id):
-        """Delete a process."""
+    def delete_process(self, process_id: str) -> None:
+        """
+        Deletes a process.
+
+        Args:
+            process_id (str): The ID of the process to delete.
+
+        Raises:
+            Exception: If deleting the process fails.
+        """
         try:
             endpoint = f"/api/v1/process/{process_id}"
             return self.client.call("DELETE", endpoint)
         except Exception as e:
-            raise Exception(f"Error 1011: Failed to delete process with ID {process_id}") from e
+            raise Exception(
+                f"Error 1011: Failed to delete process with ID {process_id}"
+            ) from e
 
-    def get_pipeline_parameters(self, pipeline_id):
-        """Get parameter list for a pipeline."""
+    def get_pipeline_parameters(self, pipeline_id: str) -> dict:
+        """
+        Gets parameter list for a pipeline.
+
+        Args:
+            pipeline_id (str): The ID of the pipeline to retrieve parameters for.
+
+        Returns:
+            dict: A dictionary of parameters for the pipeline.
+
+        Raises:
+            Exception: If retrieving parameters fails.
+        """
         try:
             endpoint = f"/api/run/v1/pipeline/{pipeline_id}/parameter-list"
             return self.client.call("GET", endpoint)
         except Exception as e:
-            raise Exception(f"Error 1012: Failed to get parameters for pipeline ID {pipeline_id}") from e
+            raise Exception(
+                f"Error 1012: Failed to get parameters for pipeline ID {pipeline_id}"
+            ) from e
 
-    def list_parameters(self):
-        """List all parameters."""
+    def list_parameters(self) -> dict:
+        """
+        Lists all parameters.
+
+        Returns:
+            dict: A dictionary of parameters.
+
+        Raises:
+            Exception: If listing parameters fails.
+        """
         try:
             endpoint = f"/api/parameter/v1"
             return self.client.call("GET", endpoint)
         except Exception as e:
             raise Exception("Error 1013: Failed to list parameters") from e
 
-    def create_parameter(self, parameter_data):
-        """Create a new parameter."""
+    def create_parameter(self, parameter_data: dict) -> dict:
+        """
+        Creates a new parameter.
+
+        Args:
+            parameter_data (dict): The data for the new parameter.
+
+        Returns:
+            dict: Information about the created parameter.
+
+        Raises:
+            Exception: If creating the parameter fails.
+        """
         try:
             endpoint = "/api/parameter/v1"
             return self.client.call("POST", endpoint, data=parameter_data)
         except Exception as e:
             raise Exception("Error 1014: Failed to create a new parameter") from e
 
-    def update_parameter(self, parameter_id, parameter_data):
-        """Update an existing parameter."""
+    def update_parameter(self, parameter_id: str, parameter_data: dict) -> dict:
+        """
+        Updates an existing parameter.
+
+        Args:
+            parameter_id (str): The ID of the parameter to update.
+            parameter_data (dict): The updated data for the parameter.
+
+        Returns:
+            dict: Information about the updated parameter.
+
+        Raises:
+            Exception: If updating the parameter fails.
+        """
         try:
             endpoint = f"/api/parameter/v1/{parameter_id}"
             return self.client.call("POST", endpoint, data=parameter_data)
         except Exception as e:
-            raise Exception(f"Error 1015: Failed to update parameter with ID {parameter_id}") from e
+            raise Exception(
+                f"Error 1015: Failed to update parameter with ID {parameter_id}"
+            ) from e
 
-    def delete_parameter(self, parameter_id):
-        """Delete an existing parameter."""
+    def delete_parameter(self, parameter_id: str) -> None:
+        """
+        Deletes an existing parameter.
+
+        Args:
+            parameter_id (str): The ID of the parameter to delete.
+
+        Raises:
+            Exception: If deleting the parameter fails.
+        """
         try:
             endpoint = f"/api/parameter/v1/{parameter_id}"
             return self.client.call("DELETE", endpoint)
         except Exception as e:
-            raise Exception(f"Error 1016: Failed to delete parameter with ID {parameter_id}") from e
+            raise Exception(
+                f"Error 1016: Failed to delete parameter with ID {parameter_id}"
+            ) from e

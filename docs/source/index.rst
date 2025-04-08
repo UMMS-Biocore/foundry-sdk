@@ -8,7 +8,6 @@ ViaFoundry SDK Guide
 
 .. toctree::
    :maxdepth: 1
-   :caption: Package Modules:
 
    modules/auth
    modules/client

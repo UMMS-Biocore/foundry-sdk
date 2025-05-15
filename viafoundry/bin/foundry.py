@@ -653,6 +653,92 @@ def delete_parameter(ctx: click.Context, parameter_id: Optional[str], parameteri
 
     response = client.process.delete_parameter(parameter_id)
     click.echo(response)
+
+@process.command()
+@click.argument("group_name", required=True, type=str)
+@click.pass_context
+def get_menu_group_by_name(ctx: click.Context, group_name: str) -> None:
+    """Find a menu group by its name and print its ID."""
+    client = ctx.obj["client"]
+    try:
+        group_id = client.process.get_menu_group_by_name(group_name)
+        if group_id:
+            click.echo(group_id)
+        else:
+            click.echo(f"Menu group '{group_name}' not found.", err=True)
+    except Exception as e:
+        click.echo(f"Error: {e}", err=True)
+
+@process.command()
+@click.option("--name", type=str, help="Filter by parameter name.")
+@click.option("--qualifier", type=str, help="Filter by qualifier.")
+@click.option("--filetype", type=str, help="Filter by file type.")
+@click.option("--id", "id_", type=str, help="Filter by parameter ID.")
+@click.pass_context
+def filter_parameters(ctx: click.Context, name: str, qualifier: str, filetype: str, id_: str) -> None:
+    """Filter parameters by name, qualifier, filetype, or ID."""
+    client = ctx.obj["client"]
+    try:
+        filtered = client.process.filter_parameters(
+            name=name,
+            qualifier=qualifier,
+            fileType=filetype,
+            id_=id_
+        )
+        click.echo(filtered)
+    except Exception as e:
+        click.echo(f"Error: {e}", err=True)
+
+@process.command()
+@click.option("--name", required=True, type=str, help="Process name.")
+@click.option("--menu-group", required=True, type=str, help="Menu group name.")
+@click.option("--input-params", required=True, type=click.File('r'), help="JSON file with input parameters.")
+@click.option("--output-params", required=True, type=click.File('r'), help="JSON file with output parameters.")
+@click.option("--summary", default="", type=str, help="Process summary.")
+@click.option("--script-body", default="", type=str, help="Script body.")
+@click.option("--script-language", default="bash", type=str, help="Script language.")
+@click.option("--script-header", default="", type=str, help="Script header.")
+@click.option("--script-footer", default="", type=str, help="Script footer.")
+@click.option("--permission-settings", default=None, type=click.File('r'), help="JSON file with permission settings.")
+@click.option("--revision-comment", default="Initial revision", type=str, help="Revision comment.")
+@click.pass_context
+def create_process_config(
+    ctx: click.Context,
+    name: str,
+    menu_group: str,
+    input_params,
+    output_params,
+    summary: str,
+    script_body: str,
+    script_language: str,
+    script_header: str,
+    script_footer: str,
+    permission_settings,
+    revision_comment: str
+) -> None:
+    """Create a full process configuration and print as JSON."""
+    client = ctx.obj["client"]
+    try:
+        input_params_data = json.load(input_params)
+        output_params_data = json.load(output_params)
+        permission_settings_data = json.load(permission_settings) if permission_settings else None
+        config = client.process.create_process_config(
+            name=name,
+            menu_group_name=menu_group,
+            input_params=input_params_data,
+            output_params=output_params_data,
+            summary=summary,
+            script_body=script_body,
+            script_language=script_language,
+            script_header=script_header,
+            script_footer=script_footer,
+            permission_settings=permission_settings_data,
+            revision_comment=revision_comment
+        )
+        click.echo(json.dumps(config, indent=4))
+    except Exception as e:
+        click.echo(f"Error: {e}", err=True)
+
 if __name__ == "__main__":
     try:
         cli()

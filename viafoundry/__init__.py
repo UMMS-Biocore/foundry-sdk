@@ -1,5 +1,5 @@
 from .auth import Auth
 from .client import ViaFoundryClient
 
-__version__ = "1.0.12"
+__version__ = "1.0.14"
 __all__ = ["Auth", "ViaFoundryClient"]

@@ -1,4 +1,4 @@
-# ViaFoundry SDK and CLI (v1.0.12)
+# ViaFoundry SDK and CLI (v1.1.14)
 
 The **ViaFoundry SDK and CLI** provide a powerful way to interact with ViaFoundry APIs. Whether you're a developer integrating with the API or a user looking for a simple command-line interface, this package has you covered.
 
@@ -32,6 +32,9 @@ The **ViaFoundry SDK and CLI** provide a powerful way to interact with ViaFoundr
     - [Check Process Usage](#check-process-usage)
     - [Duplicate a Process](#duplicate-a-process)
     - [Create a Menu Group](#create-a-menu-group)
+    - [Get Menu Group by Name](#get-menu-group-by-name)
+    - [Filter Parameters](#filter-parameters)
+    - [Create a Process Config](#create-a-process-config)
     - [Create a Process](#create-a-process)
     - [Update a Process](#update-a-process)
     - [Delete a Process](#delete-a-process)
@@ -66,6 +69,9 @@ The **ViaFoundry SDK and CLI** provide a powerful way to interact with ViaFoundr
     - [Check Process Usage](#check-process-usage-sdk)
     - [Duplicate a Process](#duplicate-a-process-sdk)
     - [Create a Menu Group](#create-a-menu-group-sdk)
+    - [Get Menu Group by Name](#get-menu-group-by-name-sdk)
+    - [Filter Parameters](#filter-parameters-sdk)
+    - [Create a Process Config](#create-a-process-config-sdk)
     - [Create a Process](#create-a-process-sdk)
     - [Update a Process](#update-a-process-sdk)
     - [Delete a Process](#delete-a-process-sdk)
@@ -101,27 +107,6 @@ The **ViaFoundry SDK and CLI** provide a powerful way to interact with ViaFoundr
 ## CLI Usage
 
 The CLI provides quick access to ViaFoundry functionalities without needing to write code. Below are some common commands.
-
-```mermaid
-graph LR
-    subgraph CLI
-        direction LR
-        client[CLI Entry Point]
-        config[Configure CLI]
-        discover[Discover Endpoints]
-        callAPI[Call API]
-        anyAPI[Call Any API Endpoint]
-        reports[Report Group]
-        process[Process Group]
-
-        client --> config 
-        client --> discover
-        client --> callAPI
-        callAPI --> anyAPI
-        callAPI --> reports
-        callAPI --> process
-    end
-```
 
 ### **1. Configure the CLI or SDK**
 Authenticate with your ViaFoundry account:
@@ -258,24 +243,6 @@ Options:
 ### **4. Reports Management**
 Work with reports using the `foundry reports` command group.
 
-```mermaid
-graph LR
-    subgraph Reports
-        direction LR
-        fetch[Fetch Report Data]
-        listProcesses[List Processes in Report]
-        listFiles[List Files in Process]
-        downloadFile[Download a File]
-        uploadFile[Upload a File to Report]
-        getReportDirs[Get Report Directories]
-
-        fetch --> listProcesses
-        listProcesses --> listFiles
-        listFiles --> downloadFile
-        listFiles --> uploadFile
-        listFiles --> getReportDirs
-    end
-```
 #### **a. Fetch Report Data**
 Fetch JSON data for a report:
 ```bash
@@ -384,38 +351,6 @@ foundry call --endpoint /api/app/v1/call/1 --method POST --data '{"type": "stand
 
 Manage processes with commands like listing, creating, updating, and deleting processes.
 
-```mermaid
-graph LR
-    subgraph Processes
-        direction LR
-        processesCLI[Processes]
-        listProcessesCLI[List Processes]
-        getProcessCLI[Get Process Details]
-        getRevisionsCLI[Get Process Revisions]
-        checkUsageCLI[Check Process Usage]
-        duplicateProcessCLI[Duplicate Process]
-        menuCLI[Menus]
-        createMenuCLI[Create Menu]
-        listMenuCLI[List Menu]
-        updateMenuCLI[Update Menu]
-        createProcessCLI[Create Process]
-        updateProcessCLI[Update Process]
-        deleteProcessCLI[Delete Process]
-
-        processesCLI --> createProcessCLI 
-        processesCLI --> listProcessesCLI
-        processesCLI --> updateProcessCLI
-        processesCLI --> deleteProcessCLI
-        listProcessesCLI --> getProcessCLI
-        getProcessCLI --> getRevisionsCLI
-        getProcessCLI --> checkUsageCLI
-        getProcessCLI --> duplicateProcessCLI
-        menuCLI --> createMenuCLI
-        menuCLI --> listMenuCLI
-        menuCLI --> updateMenuCLI
-    end
-```
-
 #### List All Processes
 ```bash
 foundry process list-processes
@@ -454,6 +389,38 @@ foundry process create-menu-group <menu_name>
 # Or
 foundry process create-menu-group --menuName <menu_name>
 ```
+
+#### **Get Menu Group by Name**
+Find a menu group by its name and print its ID:
+```bash
+foundry process get-menu-group-by-name <group_name>
+```
+
+#### **Filter Parameters**
+Filter parameters by name, qualifier, file type, or ID:
+```bash
+foundry process filter-parameters --name <name> --qualifier <qualifier> --filetype <filetype> --id <id>
+```
+All options are optional and can be combined.
+
+#### **Create a Process Config**
+Generate a full process configuration (as JSON) using menu group and parameter filters:
+```bash
+foundry process create-process-config \
+  --name "Process Name" \
+  --menu-group "Menu Group Name" \
+  --input-params input_params.json \
+  --output-params output_params.json \
+  --summary "Summary" \
+  --script-body "echo Hello" \
+  --script-language bash \
+  --script-header "" \
+  --script-footer "" \
+  --permission-settings permission_settings.json \
+  --revision-comment "Initial revision"
+```
+- `--input-params` and `--output-params` should be JSON files describing parameters.
+- `--permission-settings` is optional and should be a JSON file.
 
 #### Create a Process
 Pass the process data as a JSON file:
@@ -873,6 +840,53 @@ print(duplicate_response)
 ```python
 response = process.create_menu_group(name="New Menu Group")
 print(response)
+```
+
+#### **Get Menu Group by Name SDK**
+Find a menu group by its name and get its ID:
+```python
+group_id = process.get_menu_group_by_name("Menu Group Name")
+print(group_id)
+```
+
+#### **Filter Parameters SDK**
+Filter parameters by name, qualifier, file type, or ID:
+```python
+filtered = process.filter_parameters(
+    name="param_name",
+    qualifier="file",
+    fileType="fasta",
+    id_="123"
+)
+print(filtered)
+```
+All arguments are optional and can be combined.
+
+#### **Create a Process Config SDK**
+Generate a full process configuration (as a Python dict) using menu group and parameter filters:
+```python
+input_params = [
+    {"name": "input1", "qualifier": "file", "fileType": "fasta"},
+    # ...
+]
+output_params = [
+    {"qualifier": "file", "fileType": "txt"},
+    # ...
+]
+config = process.create_process_config(
+    name="Process Name",
+    menu_group_name="Menu Group Name",
+    input_params=input_params,
+    output_params=output_params,
+    summary="Summary",
+    script_body="echo Hello",
+    script_language="bash",
+    script_header="",
+    script_footer="",
+    permission_settings={"viewPermissions": 3, "writeGroupIds": []},
+    revision_comment="Initial revision"
+)
+print(config)
 ```
 
 #### Create a Process SDK

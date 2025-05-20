@@ -90,7 +90,7 @@ class Reports:
 
     def get_file_names(self, report_data: dict, process_name: str) -> pd.DataFrame:
         """
-        Gets file names for a specific process.
+        Gets file names for a specific process, including files in nested directories.
 
         Args:
             report_data (dict): The report data containing file entries.
@@ -103,6 +103,7 @@ class Reports:
             RuntimeError: If extracting file names fails.
         """
         try:
+            # Find all entries for the given process
             processes = [
                 entry
                 for entry in report_data["data"]
@@ -110,9 +111,23 @@ class Reports:
             ]
             if not processes:
                 self._raise_error(603, f"Process '{process_name}' not found.")
-            files = pd.DataFrame(processes[0]["children"])
 
-            return files[
+            # Recursively collect all files from children
+            def collect_files(children):
+                files = []
+                for child in children:
+                    if child.get("extension") == "dir" and "children" in child:
+                        files.extend(collect_files(child["children"]))
+                    else:
+                        files.append(child)
+                return files
+
+            all_files = collect_files(processes[0].get("children", []))
+
+            if not all_files:
+                self._raise_error(604, f"No files found for process '{process_name}'.")
+
+            return pd.DataFrame(all_files)[
                 [
                     "id",
                     "processName",
@@ -147,6 +162,7 @@ class Reports:
         """
         try:
             files = self.get_all_files(json_data)
+            print(file_path)
             file_details = files[files["file_path"] == file_path]
             file_name = os.path.basename(file_path)
 
@@ -221,7 +237,7 @@ class Reports:
 
     def get_all_files(self, report_data: dict) -> pd.DataFrame:
         """
-        Extracts all files across all processes for a specific report.
+        Extracts all files across all processes for a specific report, including files in nested directories.
 
         Args:
             report_data (dict): JSON data containing the report.
@@ -234,15 +250,26 @@ class Reports:
         """
         try:
             all_files = []
+
+            def collect_files(children, process_name):
+                files = []
+                for child in children:
+                    child["processName"] = process_name
+                    if child.get("extension") == "dir" and "children" in child:
+                        files.extend(collect_files(child["children"], process_name))
+                    else:
+                        files.append(child)
+                return files
+
             for entry in report_data["data"]:
                 process_name = entry.get("processName")
-                for child in entry.get("children", []):
-                    child["processName"] = process_name
-                    all_files.append(child)
+                if "children" in entry and isinstance(entry["children"], list):
+                    all_files.extend(collect_files(entry["children"], process_name))
 
             if not all_files:
                 self._raise_error(611, "No files found in the report.")
-
+            else:
+                logging.info(f"Found {len(all_files)} files in the report.")
             return pd.DataFrame(all_files)[
                 [
                     "id",

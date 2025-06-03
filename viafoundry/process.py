@@ -480,7 +480,6 @@ class Process:
                 fileType=param.get('fileType'),
                 id_=param.get('id')
             )
-            print(matched_params)
             if matched_params:
                 p = matched_params[0]
                 process_config['inputParameters'].append({

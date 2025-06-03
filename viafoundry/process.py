@@ -446,7 +446,9 @@ class Process:
         """
         menu_group_id = self.get_menu_group_by_name(menu_group_name)
         if not menu_group_id:
-            raise ValueError(f"Menu group '{menu_group_name}' not found")
+            self.create_menu_group(menu_group_name)
+            menu_group_id = self.get_menu_group_by_name(menu_group_name)
+            #raise ValueError(f"Menu group '{menu_group_name}' not found")
 
         if permission_settings is None:
             permission_settings = {
@@ -473,11 +475,12 @@ class Process:
         # Add input parameters
         for param in input_params:
             matched_params = self.filter_parameters(
-                name=param.get('name'),
+                name=param.get('displayName'),
                 qualifier=param.get('qualifier'),
                 fileType=param.get('fileType'),
                 id_=param.get('id')
             )
+            print(matched_params)
             if matched_params:
                 p = matched_params[0]
                 process_config['inputParameters'].append({
@@ -488,10 +491,31 @@ class Process:
                     "optional": param.get('optional', False),
                     "test": param.get('test', "")
                 })
+            else:
+                self.create_parameter({
+                    "name": param.get('name'),
+                    "qualifier": param.get('qualifier'),
+                    "fileType": param.get('fileType'),
+                })
+                matched_params = self.filter_parameters(
+                    name=param.get('name'),
+                    qualifier=param.get('qualifier'),
+                    fileType=param.get('fileType'),
+                    id_=param.get('id')
+                )
+                p = matched_params[0]
+                process_config['inputParameters'].append({
+                    "parameterId": p['id'],
+                    "displayName": param.get('displayName', p.get('name', '')),
+                    "operator": param.get('operator', ""),
+                    "operatorContent": param.get('operatorContent', ""),
+                    "optional": param.get('optional', False),
+                    "test": param.get('test', "")
+                })
 
-        # Add output parameters
         for param in output_params:
             matched_params = self.filter_parameters(
+                name=param.get('displayName'),
                 qualifier=param.get('qualifier'),
                 fileType=param.get('fileType'),
                 id_=param.get('id')
@@ -505,5 +529,27 @@ class Process:
                     "operatorContent": param.get('operatorContent', ""),
                     "optional": param.get('optional', False)
                 })
+            else: 
+                self.create_parameter({
+                    "name": param.get('name'),
+                    "qualifier": param.get('qualifier'),
+                    "fileType": param.get('fileType'),
+                })
+                matched_params = self.filter_parameters(
+                    name=param.get('name'),
+                    qualifier=param.get('qualifier'),
+                    fileType=param.get('fileType'),
+                    id_=param.get('id')
+                )
+                p = matched_params[0]
+                process_config['outputParameters'].append({
+                    "parameterId": p['id'],
+                    "displayName": param.get('displayName', p.get('name', '')),
+                    "operator": param.get('operator', ""),
+                    "operatorContent": param.get('operatorContent', ""),
+                    "optional": param.get('optional', False),
+                    "test": param.get('test', "")
+                })
+                print("Test: Output parameter not found, skipping creation")
 
         return process_config

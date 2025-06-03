@@ -492,12 +492,12 @@ class Process:
                 })
             else:
                 self.create_parameter({
-                    "name": param.get('name'),
+                    "name": param.get('displayName'),
                     "qualifier": param.get('qualifier'),
                     "fileType": param.get('fileType'),
                 })
                 matched_params = self.filter_parameters(
-                    name=param.get('name'),
+                    name=param.get('displayName'),
                     qualifier=param.get('qualifier'),
                     fileType=param.get('fileType'),
                     id_=param.get('id')
@@ -530,12 +530,12 @@ class Process:
                 })
             else: 
                 self.create_parameter({
-                    "name": param.get('name'),
+                    "name": param.get('displayName'),
                     "qualifier": param.get('qualifier'),
                     "fileType": param.get('fileType'),
                 })
                 matched_params = self.filter_parameters(
-                    name=param.get('name'),
+                    name=param.get('displayName'),
                     qualifier=param.get('qualifier'),
                     fileType=param.get('fileType'),
                     id_=param.get('id')
@@ -549,6 +549,4 @@ class Process:
                     "optional": param.get('optional', False),
                     "test": param.get('test', "")
                 })
-                print("Test: Output parameter not found, skipping creation")
-
         return process_config

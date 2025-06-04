@@ -395,7 +395,7 @@ class Process:
                     continue
                 if qualifier and qualifier.lower() != param.get('qualifier', '').lower():
                     continue
-                if fileType and fileType.lower() != param.get('fileType', '').lower():
+                if fileType and fileType.lower() != (param.get('fileType') or '').lower():
                     continue
                 if id_ and id_ != str(param.get('id', '')):
                     continue

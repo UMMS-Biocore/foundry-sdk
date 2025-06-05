@@ -888,6 +888,7 @@ config = process.create_process_config(
 )
 print(config)
 ```
+For each input and output parameter, the funciton will search for mathching parameters and use them if found. If the parameter does not exist, a new one will be created. In this case the fields "name" and "qualifier" are required.
 
 #### Create a Process SDK
 ```python

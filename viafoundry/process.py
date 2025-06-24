@@ -1,3 +1,7 @@
+from viafoundry.models.domain.process import ConfigParameter, Parameter, ProcessConfig, ProcessSummaryResponse, ProcessResponse, ServerParameterResponse
+from pydantic import TypeAdapter
+
+
 class Process:
     """
     A class for managing processes in the ViaFoundry API.
@@ -18,12 +22,12 @@ class Process:
         """
         self.client = client
 
-    def list_processes(self) -> dict:
+    def list_processes(self) -> list[ProcessSummaryResponse]:
         """
         Lists all existing processes.
 
         Returns:
-            dict: A dictionary of existing processes.
+            list[ProcessSummaryResponse]: A dictionary of existing processes.
 
         Raises:
             Exception: If listing processes fails.
@@ -33,89 +37,76 @@ class Process:
         """
         try:
             endpoint = "/api/v1/process/"
-            return self.client.call("GET", endpoint)
+            response = self.client.call("GET", endpoint)
+            process_list_adapter = TypeAdapter(list[ProcessSummaryResponse])
+            return process_list_adapter.validate_python(response.get("data", []))
         except Exception as e:
             raise Exception("Error 1001: Failed to list processes") from e
 
-    def get_process(self, process_id: str) -> dict:
+    def get_process(self, process_id: str | int) -> ProcessResponse:
         """
         Retrieves information about a specific process.
 
         Args:
-            process_id (str): The ID of the process to retrieve.
+            process_id (str | int): The ID of the process to retrieve.
 
         Returns:
-            dict: The process information.
+            ProcessResponse: The process information.
 
         Raises:
             Exception: If retrieving the process fails.
         """
         try:
             endpoint = f"/api/v1/process/{process_id}"
-            return self.client.call("GET", endpoint)
+            response = self.client.call("GET", endpoint)
+            process_adapter = TypeAdapter(ProcessResponse)
+            return process_adapter.validate_python(response)
         except Exception as e:
             raise Exception(
                 f"Error 1002: Failed to retrieve process with ID {process_id}"
             ) from e
 
-    def get_process_revisions(self, process_id: str) -> dict:
+    def get_process_revisions(self, process_id: str | int) -> list[ProcessResponse]:
         """
         Gets all revisions for the given process.
 
         Args:
-            process_id (str): The ID of the process to get revisions for.
+            process_id (str | int): The ID of the process to get revisions for.
 
         Returns:
-            dict: A dictionary of revisions for the process.
+            list[ProcessResponse]: A dictionary of revisions for the process.
 
         Raises:
             Exception: If retrieving revisions fails.
         """
         try:
             endpoint = f"/api/v1/process/{process_id}/revisions"
-            return self.client.call("GET", endpoint)
+            response = self.client.call("GET", endpoint)
+            revisions_adapter = TypeAdapter(list[ProcessResponse])
+            return revisions_adapter.validate_python(response.get("revisions", []))
         except Exception as e:
             raise Exception(
                 f"Error 1003: Failed to get revisions for process ID {process_id}"
             ) from e
 
-    def check_process_usage(self, process_id: str) -> dict:
-        """
-        Checks if a process is used in pipelines or runs.
-
-        Args:
-            process_id (str): The ID of the process to check.
-
-        Returns:
-            dict: Information about the process usage.
-
-        Raises:
-            Exception: If checking usage fails.
-        """
-        try:
-            endpoint = f"/api/v1/process/{process_id}/is-used"
-            return self.client.call("GET", endpoint)
-        except Exception as e:
-            raise Exception(
-                f"Error 1004: Failed to check usage for process ID {process_id}"
-            ) from e
-
-    def duplicate_process(self, process_id: str) -> dict:
+    def duplicate_process(self, process_id: str | int) -> ProcessResponse:
         """
         Duplicates a process.
 
         Args:
-            process_id (str): The ID of the process to duplicate.
+            process_id (str | int): The ID of the process to duplicate.
 
         Returns:
-            dict: Information about the duplicated process.
+            ProcessResponse: Information about the duplicated process.
 
         Raises:
             Exception: If duplicating the process fails.
         """
         try:
             endpoint = f"/api/v1/process/{process_id}/duplicate"
-            return self.client.call("POST", endpoint)
+            response = self.client.call("POST", endpoint)
+            process_adapter = TypeAdapter(ProcessResponse)
+            return process_adapter.validate_python(response)
         except Exception as e:
             raise Exception(
                 f"Error 1005: Failed to duplicate process with ID {process_id}"
@@ -159,12 +150,12 @@ class Process:
         except Exception as e:
             raise Exception("Error 1007: Failed to list menu groups") from e
 
-    def update_menu_group(self, menu_group_id: str, name: str) -> dict:
+    def update_menu_group(self, menu_group_id: str | int, name: str) -> dict:
         """
         Updates a menu group.
 
         Args:
-            menu_group_id (str): The ID of the menu group to update.
+            menu_group_id (str | int): The ID of the menu group to update.
             name (str): The new name for the menu group.
 
         Returns:
@@ -182,54 +173,66 @@ class Process:
                 f"Error 1008: Failed to update menu group with ID {menu_group_id}"
             ) from e
 
-    def create_process(self, process_data: dict) -> dict:
+    def create_process(self, process_data: ProcessConfig) -> ProcessResponse:
         """
         Creates a new process.
 
         Args:
-            process_data (dict): The data for the new process.
+            process_data (ProcessConfig): The data for the new process.
 
         Returns:
-            dict: Information about the created process.
+            ProcessResponse: Information about the created process.
 
         Raises:
             Exception: If creating the process fails.
         """
         try:
             endpoint = "/api/v1/process"
-            return self.client.call("POST", endpoint, data=process_data)
+            process_data_dict = process_data.model_dump(
+                mode="json", exclude_none=True, by_alias=True
+            )
+            response = self.client.call(
+                "POST", endpoint, data=process_data_dict)
+            process_adapter = TypeAdapter(ProcessResponse)
+            return process_adapter.validate_python(response)
         except Exception as e:
             raise Exception(
                 "Error 1009: Failed to create a new process") from e
 
-    def update_process(self, process_id: str, process_data: dict) -> dict:
+    def update_process(self, process_id: str | int, process_data: ProcessConfig) -> ProcessResponse:
         """
         Updates an existing process.
 
         Args:
-            process_id (str): The ID of the process to update.
+            process_id (str | int): The ID of the process to update.
             process_data (dict): The updated data for the process.
 
         Returns:
-            dict: Information about the updated process.
+            ProcessResponse: Information about the updated process.
 
         Raises:
             Exception: If updating the process fails.
         """
         try:
             endpoint = f"/api/v1/process/{process_id}"
-            return self.client.call("PUT", endpoint, data=process_data)
+            process_data_dict = process_data.model_dump(
+                mode="json", exclude_none=True, by_alias=True
+            )
+            response = self.client.call(
+                "PUT", endpoint, data=process_data_dict)
+            process_adapter = TypeAdapter(ProcessResponse)
+            return process_adapter.validate_python(response)
         except Exception as e:
             raise Exception(
                 f"Error 1010: Failed to update process with ID {process_id}"
             ) from e
 
-    def delete_process(self, process_id: str) -> None:
+    def delete_process(self, process_id: str | int) -> None:
         """
         Deletes a process.
 
         Args:
-            process_id (str): The ID of the process to delete.
+            process_id (str | int): The ID of the process to delete.
 
         Raises:
             Exception: If deleting the process fails.
@@ -242,86 +245,83 @@ class Process:
                 f"Error 1011: Failed to delete process with ID {process_id}"
             ) from e
 
-    def get_pipeline_parameters(self, pipeline_id: str) -> dict:
-        """
-        Gets parameter list for a pipeline.
-
-        Args:
-            pipeline_id (str): The ID of the pipeline to retrieve parameters for.
-
-        Returns:
-            dict: A dictionary of parameters for the pipeline.
-
-        Raises:
-            Exception: If retrieving parameters fails.
-        """
-        try:
-            endpoint = f"/api/run/v1/pipeline/{pipeline_id}/parameter-list"
-            return self.client.call("GET", endpoint)
-        except Exception as e:
-            raise Exception(
-                f"Error 1012: Failed to get parameters for pipeline ID {pipeline_id}"
-            ) from e
-
-    def list_parameters(self) -> dict:
+    def list_parameters(self) -> list[ServerParameterResponse]:
         """
         Lists all parameters.
 
         Returns:
-            dict: A dictionary of parameters.
+            list[ServerParameterResponse]: A dictionary of parameters.
 
         Raises:
             Exception: If listing parameters fails.
         """
         try:
             endpoint = f"/api/parameter/v1"
-            return self.client.call("GET", endpoint)
+            response = self.client.call("GET", endpoint)
+            parameter_adapter = TypeAdapter(list[ServerParameterResponse])
+            return parameter_adapter.validate_python(response)
         except Exception as e:
             raise Exception("Error 1013: Failed to list parameters") from e
 
-    def create_parameter(self, parameter_data: dict) -> dict:
+    def create_parameter(self, parameter_data: Parameter | dict) -> ServerParameterResponse:
         """
         Creates a new parameter.
 
         Args:
-            parameter_data (dict): The data for the new parameter.
+            parameter_data (Parameter | dict): The data for the new parameter.
 
         Returns:
-            dict: Information about the created parameter.
+            ServerParameterResponse: Information about the created parameter.
 
         Raises:
             Exception: If creating the parameter fails.
         """
         try:
             endpoint = "/api/parameter/v1"
-            return self.client.call("POST", endpoint, data=parameter_data)
+            if not isinstance(parameter_data, Parameter):
+                parameter_data = Parameter.model_validate(parameter_data)
+            parameter_data_dict = parameter_data.model_dump(
+                mode="json", exclude_none=False, by_alias=True
+            )
+            response = self.client.call(
+                "POST", endpoint, data=parameter_data_dict)
+            parameter_adapter = TypeAdapter(ServerParameterResponse)
+            return parameter_adapter.validate_python(response)
         except Exception as e:
             raise Exception(
                 "Error 1014: Failed to create a new parameter") from e
 
-    def update_parameter(self, parameter_id: str, parameter_data: dict) -> dict:
+    def update_parameter(self, parameter_id: str | int, parameter_data: Parameter | dict) -> ServerParameterResponse:
         """
         Updates an existing parameter.
 
         Args:
-            parameter_id (str): The ID of the parameter to update.
-            parameter_data (dict): The updated data for the parameter.
+            parameter_id (str | int): The ID of the parameter to update.
+            parameter_data (Parameter | dict): The updated data for the parameter.
 
         Returns:
-            dict: Information about the updated parameter.
+            ServerParameterResponse: Information about the updated parameter.
 
         Raises:
             Exception: If updating the parameter fails.
         """
         try:
             endpoint = f"/api/parameter/v1/{parameter_id}"
-            return self.client.call("POST", endpoint, data=parameter_data)
+            if not isinstance(parameter_data, Parameter):
+                parameter_data = Parameter.model_validate(parameter_data)
+            parameter_data_dict = parameter_data.model_dump(
+                mode="json", exclude_none=False, by_alias=True
+            )
+            response = self.client.call(
+                "POST", endpoint, data=parameter_data_dict)
+            parameter_adapter = TypeAdapter(ServerParameterResponse)
+            return parameter_adapter.validate_python(response)
         except Exception as e:
             raise Exception(
                 f"Error 1015: Failed to update parameter with ID {parameter_id}"
             ) from e
 
-    def delete_parameter(self, parameter_id: str) -> None:
+    def delete_parameter(self, parameter_id: str | int) -> None:
         """
         Deletes an existing parameter.
 
@@ -368,7 +368,7 @@ class Process:
         qualifier: str = None,
         fileType: str = None,
         id_: str = None
-    ) -> list:
+    ) -> list[ServerParameterResponse]:
         """
         Filters parameters by optional name, qualifier, fileType, and id.
         All filters are case-insensitive and optional.
@@ -380,7 +380,7 @@ class Process:
             id_ (str, optional): ID to filter by.
 
         Returns:
-            list: List of filtered parameter dictionaries.
+            list[ServerParameterResponse]: List of filtered parameters.
 
         Raises:
             Exception: If listing parameters fails.
@@ -391,20 +391,20 @@ class Process:
                 all_params, dict) else all_params
             filtered = []
             for param in params:
-                if name and name.lower() not in param.get('name', '').lower():
+                if name and name.lower() not in (param.name or '').lower():
                     continue
-                if qualifier and qualifier.lower() != param.get('qualifier', '').lower():
+                if qualifier and qualifier.lower() != (param.qualifier or '').lower():
                     continue
-                if fileType and fileType.lower() != (param.get('fileType') or '').lower():
+                if fileType and fileType.lower() != (param.fileType or '').lower():
                     continue
-                if id_ and id_ != str(param.get('id', '')):
+                if id_ and id_ != str(param.id or ''):
                     continue
                 filtered.append(param)
             # Print results
             for param in filtered:
                 print(
-                    f"ID: {param.get('id')}, Name: {param.get('name')}, "
-                    f"Qualifier: {param.get('qualifier', '')}, FileType: {param.get('fileType', '')}"
+                    f"ID: {param.id}, Name: {param.name}, "
+                    f"Qualifier: {param.qualifier or ''}, FileType: {param.fileType or ''}"
                 )
             return filtered
         except Exception as e:
@@ -424,7 +424,7 @@ class Process:
         script_footer: str = "",
         permission_settings: dict = None,
         revision_comment: str = "Initial revision"
-    ) -> dict:
+    ) -> ProcessConfig:
         """
         Creates a full process configuration with all required fields.
 
@@ -442,16 +442,15 @@ class Process:
             revision_comment (str, optional): Revision comment.
 
         Returns:
-            dict: The process configuration dictionary.
+            ProcessConfig: The process configuration.
 
         Raises:
             ValueError: If the menu group is not found.
         """
         menu_group_id = self.get_menu_group_by_name(menu_group_name)
         if not menu_group_id:
-            self.create_menu_group(menu_group_name)
-            menu_group_id = self.get_menu_group_by_name(menu_group_name)
-            # raise ValueError(f"Menu group '{menu_group_name}' not found")
+            menu_group_response = self.create_menu_group(menu_group_name)
+            menu_group_id = menu_group_response["id"]
 
         if permission_settings is None:
             permission_settings = {
@@ -475,81 +474,50 @@ class Process:
             "revisionComment": revision_comment
         }
 
+        def process_parameter(param: dict) -> Parameter:
+            matched_params = self.filter_parameters(
+                name=param.get('name'),
+                qualifier=param.get('qualifier'),
+                fileType=param.get('fileType'),
+                id_=param.get('id')
+            )
+            if matched_params:
+                p = matched_params[0]
+                return ConfigParameter(
+                    parameterId=p.id,
+                    displayName=param.get('displayName', (p.name or '')),
+                    operator=param.get('operator', ""),
+                    operatorContent=param.get('operatorContent', ""),
+                    optional=param.get('optional', False),
+                    test=param.get('test', "")
+                )
+            else:
+                self.create_parameter(Parameter.model_validate({
+                    "name": param.get('name'),
+                    "qualifier": param.get('qualifier'),
+                    "fileType": param.get('fileType'),
+                }))
+                matched_params = self.filter_parameters(
+                    name=param.get('name'),
+                    qualifier=param.get('qualifier'),
+                    fileType=param.get('fileType'),
+                    id_=param.get('id')
+                )
+                p = matched_params[0]
+                return ConfigParameter(
+                    parameterId=p.id,
+                    displayName=param.get('displayName', (p.name or '')),
+                    operator=param.get('operator', ""),
+                    operatorContent=param.get('operatorContent', ""),
+                    optional=param.get('optional', False),
+                    test=param.get('test', "")
+                )
+
         # Add input parameters
         for param in input_params:
-            matched_params = self.filter_parameters(
-                name=param.get('name'),
-                qualifier=param.get('qualifier'),
-                fileType=param.get('fileType'),
-                id_=param.get('id')
-            )
-            if matched_params:
-                p = matched_params[0]
-                process_config['inputParameters'].append({
-                    "parameterId": p['id'],
-                    "displayName": param.get('displayName', p.get('name', '')),
-                    "operator": param.get('operator', ""),
-                    "operatorContent": param.get('operatorContent', ""),
-                    "optional": param.get('optional', False),
-                    "test": param.get('test', "")
-                })
-            else:
-                self.create_parameter({
-                    "name": param.get('name'),
-                    "qualifier": param.get('qualifier'),
-                    "fileType": param.get('fileType'),
-                })
-                matched_params = self.filter_parameters(
-                    name=param.get('name'),
-                    qualifier=param.get('qualifier'),
-                    fileType=param.get('fileType'),
-                    id_=param.get('id')
-                )
-                p = matched_params[0]
-                process_config['inputParameters'].append({
-                    "parameterId": p['id'],
-                    "displayName": param.get('displayName', p.get('name', '')),
-                    "operator": param.get('operator', ""),
-                    "operatorContent": param.get('operatorContent', ""),
-                    "optional": param.get('optional', False),
-                    "test": param.get('test', "")
-                })
+            process_config['inputParameters'].append(process_parameter(param))
 
         for param in output_params:
-            matched_params = self.filter_parameters(
-                name=param.get('name'),
-                qualifier=param.get('qualifier'),
-                fileType=param.get('fileType'),
-                id_=param.get('id')
-            )
-            if matched_params:
-                p = matched_params[0]
-                process_config['outputParameters'].append({
-                    "parameterId": p['id'],
-                    "displayName": param.get('displayName', p.get('name', '')),
-                    "operator": param.get('operator', ""),
-                    "operatorContent": param.get('operatorContent', ""),
-                    "optional": param.get('optional', False)
-                })
-            else:
-                self.create_parameter({
-                    "name": param.get('name'),
-                    "qualifier": param.get('qualifier'),
-                    "fileType": param.get('fileType'),
-                })
-                matched_params = self.filter_parameters(
-                    name=param.get('name'),
-                    qualifier=param.get('qualifier'),
-                    fileType=param.get('fileType'),
-                    id_=param.get('id')
-                )
-                p = matched_params[0]
-                process_config['outputParameters'].append({
-                    "parameterId": p['id'],
-                    "displayName": param.get('displayName', p.get('name', '')),
-                    "operator": param.get('operator', ""),
-                    "operatorContent": param.get('operatorContent', ""),
-                    "optional": param.get('optional', False),
-                    "test": param.get('test', "")
-                })
-        return process_config
+            process_config['outputParameters'].append(process_parameter(param))
+
+        return ProcessConfig.model_validate(process_config)

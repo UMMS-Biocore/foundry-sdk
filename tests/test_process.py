@@ -1,5 +1,4 @@
 import pytest
-import pytest
 from unittest.mock import Mock, MagicMock, patch
 from viafoundry.process import Process
 from viafoundry.models.domain.process import (

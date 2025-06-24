@@ -22,6 +22,13 @@ class Process:
         """
         self.client = client
 
+    def _validate_with_type_adapter(self, model_type, data):
+        """
+        Helper method to validate data using Pydantic's TypeAdapter.
+        """
+        adapter = TypeAdapter(model_type)
+        return adapter.validate_python(data)
+
     def list_processes(self) -> list[ProcessSummaryResponse]:
         """
         Lists all existing processes.
@@ -38,8 +45,7 @@ class Process:
         try:
             endpoint = "/api/v1/process/"
             response = self.client.call("GET", endpoint)
-            process_list_adapter = TypeAdapter(list[ProcessSummaryResponse])
-            return process_list_adapter.validate_python(response.get("data", []))
+            return self._validate_with_type_adapter(list[ProcessSummaryResponse], response.get("data", []))
         except Exception as e:
             raise Exception("Error 1001: Failed to list processes") from e
 
@@ -59,8 +65,7 @@ class Process:
         try:
             endpoint = f"/api/v1/process/{process_id}"
             response = self.client.call("GET", endpoint)
-            process_adapter = TypeAdapter(ProcessResponse)
-            return process_adapter.validate_python(response)
+            return self._validate_with_type_adapter(ProcessResponse, response)
         except Exception as e:
             raise Exception(
                 f"Error 1002: Failed to retrieve process with ID {process_id}"
@@ -82,8 +87,7 @@ class Process:
         try:
             endpoint = f"/api/v1/process/{process_id}/revisions"
             response = self.client.call("GET", endpoint)
-            revisions_adapter = TypeAdapter(list[ProcessResponse])
-            return revisions_adapter.validate_python(response.get("revisions", []))
+            return self._validate_with_type_adapter(list[ProcessResponse], response.get("revisions", []))
         except Exception as e:
             raise Exception(
                 f"Error 1003: Failed to get revisions for process ID {process_id}"
@@ -105,8 +109,7 @@ class Process:
         try:
             endpoint = f"/api/v1/process/{process_id}/duplicate"
             response = self.client.call("POST", endpoint)
-            process_adapter = TypeAdapter(ProcessResponse)
-            return process_adapter.validate_python(response)
+            return self._validate_with_type_adapter(ProcessResponse, response)
         except Exception as e:
             raise Exception(
                 f"Error 1005: Failed to duplicate process with ID {process_id}"
@@ -193,8 +196,7 @@ class Process:
             )
             response = self.client.call(
                 "POST", endpoint, data=process_data_dict)
-            process_adapter = TypeAdapter(ProcessResponse)
-            return process_adapter.validate_python(response)
+            return self._validate_with_type_adapter(ProcessResponse, response)
         except Exception as e:
             raise Exception(
                 "Error 1009: Failed to create a new process") from e
@@ -220,8 +222,7 @@ class Process:
             )
             response = self.client.call(
                 "PUT", endpoint, data=process_data_dict)
-            process_adapter = TypeAdapter(ProcessResponse)
-            return process_adapter.validate_python(response)
+            return self._validate_with_type_adapter(ProcessResponse, response)
         except Exception as e:
             raise Exception(
                 f"Error 1010: Failed to update process with ID {process_id}"
@@ -258,8 +259,7 @@ class Process:
         try:
             endpoint = f"/api/parameter/v1"
             response = self.client.call("GET", endpoint)
-            parameter_adapter = TypeAdapter(list[ServerParameterResponse])
-            return parameter_adapter.validate_python(response)
+            return self._validate_with_type_adapter(list[ServerParameterResponse], response)
         except Exception as e:
             raise Exception("Error 1013: Failed to list parameters") from e
 
@@ -285,8 +285,7 @@ class Process:
             )
             response = self.client.call(
                 "POST", endpoint, data=parameter_data_dict)
-            parameter_adapter = TypeAdapter(ServerParameterResponse)
-            return parameter_adapter.validate_python(response)
+            return self._validate_with_type_adapter(ServerParameterResponse, response)
         except Exception as e:
             raise Exception(
                 "Error 1014: Failed to create a new parameter") from e
@@ -314,8 +313,7 @@ class Process:
             )
             response = self.client.call(
                 "POST", endpoint, data=parameter_data_dict)
-            parameter_adapter = TypeAdapter(ServerParameterResponse)
-            return parameter_adapter.validate_python(response)
+            return self._validate_with_type_adapter(ServerParameterResponse, response)
         except Exception as e:
             raise Exception(
                 f"Error 1015: Failed to update parameter with ID {parameter_id}"

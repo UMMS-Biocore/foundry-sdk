@@ -2,7 +2,6 @@ import pytest
 from unittest.mock import Mock
 from viafoundry.client import ViaFoundryClient
 from viafoundry.reports import Reports
-from viafoundry.process import Process
 
 
 @pytest.fixture
@@ -54,8 +53,3 @@ def sample_report_data():
             },
         ]
     }
-
-
-@pytest.fixture
-def process(mock_client):
-    return Process(mock_client)

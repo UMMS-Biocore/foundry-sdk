@@ -27,7 +27,7 @@ class Parameter(BaseModel):
     """
     name: str = Field(..., description="Name of the parameter")
     qualifier: str = Field(
-        None, description="Qualifier for the parameter")
+        ..., description="Qualifier for the parameter")
     fileType: Optional[str] = Field(
         None, description="File type for the parameter")
 
@@ -47,7 +47,7 @@ class ServerParameterResponse(BaseModel):
         ..., description="Unique identifier for the parameter")
     name: str = Field(..., description="Name of the parameter")
     qualifier: str = Field(
-        None, description="Qualifier for the parameter")
+        ..., description="Qualifier for the parameter")
     fileType: Optional[str] = Field(
         None, description="File type for the parameter")
 
@@ -65,7 +65,7 @@ class ViewPermissionsEnum(IntEnum):
     """
     UserOwned = 3,
     GroupShared = 15,
-    Public = 63,
+    Public = 63
 
 
 class PermissionSettings(BaseModel):

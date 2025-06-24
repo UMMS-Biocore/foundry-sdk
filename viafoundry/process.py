@@ -34,7 +34,7 @@ class Process:
         Lists all existing processes.
 
         Returns:
-            list[ProcessSummaryResponse]: A dictionary of existing processes.
+            list[ProcessSummaryResponse]: A list of ProcessSummaryResponse instances.
 
         Raises:
             Exception: If listing processes fails.
@@ -251,7 +251,7 @@ class Process:
         Lists all parameters.
 
         Returns:
-            list[ServerParameterResponse]: A dictionary of parameters.
+            list[ServerParameterResponse]: A list of ServerParameterResponse objects.
 
         Raises:
             Exception: If listing parameters fails.

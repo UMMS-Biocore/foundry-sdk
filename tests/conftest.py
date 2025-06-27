@@ -11,7 +11,8 @@ def mock_auth(mocker):
     mock_instance = mock.return_value
     mock_instance.configure.return_value = None
     mock_instance.hostname = "http://localhost"
-    mock_instance.get_headers.return_value = {"Authorization": "Bearer mock_token"}
+    mock_instance.get_headers.return_value = {
+        "Authorization": "Bearer mock_token"}
     return mock_instance
 
 

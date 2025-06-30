@@ -10,7 +10,15 @@ import io
 import mimetypes
 from datetime import datetime
 from IPython import get_ipython
-from typing import Union, Optional
+from typing import Union, Optional, List
+from viafoundry.models.domain.reports import (
+    ReportData,
+    MultiReportData,
+    FileUploadRequest,
+    FileUploadResponse,
+    ReportDirectory,
+    ReportPathsResponse
+)
 
 
 class Reports:
@@ -33,7 +41,7 @@ class Reports:
         self.client = client
         self.enable_session_history = enable_session_history
 
-    def fetch_report_data(self, report_id: str) -> dict:
+    def fetch_report_data(self, report_id: str) -> MultiReportData:
         """
         Fetches JSON data for a report and injects `file_dir` into all entries.
 
@@ -41,7 +49,7 @@ class Reports:
             report_id (str): The ID of the report to fetch data for.
 
         Returns:
-            dict: The fetched report data with injected file paths.
+            MultiReportData: The fetched report data with injected file paths as a Pydantic model.
 
         Raises:
             RuntimeError: If fetching report data fails.
@@ -64,18 +72,18 @@ class Reports:
                         add_file_path(entry["children"])
 
             add_file_path(report_data.get("data", []))
-            return report_data
+            return MultiReportData.model_validate(report_data)
         except Exception as e:
             self._raise_error(
                 601, f"Failed to fetch report data for report ID '{report_id}': {e}"
             )
 
-    def get_process_names(self, report_data: dict) -> list:
+    def get_process_names(self, report_data: Union[dict, MultiReportData]) -> list:
         """
         Gets unique process names from report data.
 
         Args:
-            report_data (dict): The report data containing process entries.
+            report_data (Union[dict, MultiReportData]): The report data containing process entries.
 
         Returns:
             list: A list of unique process names.
@@ -84,16 +92,22 @@ class Reports:
             RuntimeError: If extracting process names fails.
         """
         try:
-            return list({entry.get("processName") for entry in report_data["data"]})
+            if isinstance(report_data, MultiReportData):
+                data_entries = [entry.model_dump()
+                                for entry in report_data.data]
+            else:
+                data_entries = report_data["data"]
+
+            return list({entry.get("processName") for entry in data_entries})
         except Exception as e:
             self._raise_error(602, f"Failed to extract process names: {e}")
 
-    def get_file_names(self, report_data: dict, process_name: str) -> pd.DataFrame:
+    def get_file_names(self, report_data: Union[dict, MultiReportData], process_name: str) -> pd.DataFrame:
         """
         Gets file names for a specific process, including files in nested directories.
 
         Args:
-            report_data (dict): The report data containing file entries.
+            report_data (Union[dict, MultiReportData]): The report data containing file entries.
             process_name (str): The name of the process to get file names for.
 
         Returns:
@@ -103,10 +117,16 @@ class Reports:
             RuntimeError: If extracting file names fails.
         """
         try:
+            if isinstance(report_data, MultiReportData):
+                data_entries = [entry.model_dump()
+                                for entry in report_data.data]
+            else:
+                data_entries = report_data["data"]
+
             # Find all entries for the given process
             processes = [
                 entry
-                for entry in report_data["data"]
+                for entry in data_entries
                 if entry.get("processName") == process_name
             ]
             if not processes:
@@ -125,7 +145,8 @@ class Reports:
             all_files = collect_files(processes[0].get("children", []))
 
             if not all_files:
-                self._raise_error(604, f"No files found for process '{process_name}'.")
+                self._raise_error(
+                    604, f"No files found for process '{process_name}'.")
 
             return pd.DataFrame(all_files)[
                 [
@@ -144,13 +165,13 @@ class Reports:
             )
 
     def load_file(
-        self, json_data: dict, file_path: str, sep: str = "\t"
+        self, json_data: Union[dict, MultiReportData], file_path: str, sep: str = "\t"
     ) -> Union[pd.DataFrame, str]:
         """
         Loads or downloads a file from a process.
 
         Args:
-            json_data (dict): JSON data containing the report.
+            json_data (Union[dict, MultiReportData]): JSON data containing the report.
             file_path (str): The path of the file to load or download.
             sep (str): Separator for tabular files. Defaults to tab character.
 
@@ -171,7 +192,8 @@ class Reports:
                     605, f"File '{file_name}' not found in the files of this report."
                 )
 
-            file_url = self.client.auth.hostname + file_details["routePath"].iloc[0]
+            file_url = self.client.auth.hostname + \
+                file_details["routePath"].iloc[0]
             file_extension = file_details["extension"].iloc[0].lower()
 
             headers = self.client.auth.get_headers()
@@ -193,13 +215,13 @@ class Reports:
             self._raise_error(607, f"Failed to load file '{file_name}': {e}")
 
     def download_file(
-        self, report_data: dict, file_path: str, download_dir: str = os.getcwd()
+        self, report_data: Union[dict, MultiReportData], file_path: str, download_dir: str = os.getcwd()
     ) -> str:
         """
         Downloads a file from the API.
 
         Args:
-            report_data (dict): The report data containing file entries.
+            report_data (Union[dict, MultiReportData]): The report data containing file entries.
             file_path (str): The path of the file to download.
             download_dir (str): The directory to save the downloaded file. Defaults to current working directory.
 
@@ -219,10 +241,12 @@ class Reports:
                     608, f"File '{file_name}' not found in the files of this report."
                 )
 
-            file_url = self.client.auth.hostname + file_details["routePath"].iloc[0]
+            file_url = self.client.auth.hostname + \
+                file_details["routePath"].iloc[0]
             output_path = os.path.join(download_dir, file_name)
 
-            response = requests.get(file_url, headers=self.client.auth.get_headers())
+            response = requests.get(
+                file_url, headers=self.client.auth.get_headers())
             if response.status_code != 200:
                 self._raise_error(
                     609, f"Failed to download file: HTTP {response.status_code}"
@@ -233,14 +257,15 @@ class Reports:
 
             return output_path
         except Exception as e:
-            self._raise_error(610, f"Failed to download file '{file_name}': {e}")
+            self._raise_error(
+                610, f"Failed to download file '{file_name}': {e}")
 
-    def get_all_files(self, report_data: dict) -> pd.DataFrame:
+    def get_all_files(self, report_data: Union[dict, MultiReportData]) -> pd.DataFrame:
         """
         Extracts all files across all processes for a specific report, including files in nested directories.
 
         Args:
-            report_data (dict): JSON data containing the report.
+            report_data (Union[dict, MultiReportData]): JSON data containing the report.
 
         Returns:
             pd.DataFrame: A DataFrame containing all files with metadata.
@@ -256,15 +281,23 @@ class Reports:
                 for child in children:
                     child["processName"] = process_name
                     if child.get("extension") == "dir" and "children" in child:
-                        files.extend(collect_files(child["children"], process_name))
+                        files.extend(collect_files(
+                            child["children"], process_name))
                     else:
                         files.append(child)
                 return files
 
-            for entry in report_data["data"]:
+            if isinstance(report_data, MultiReportData):
+                data_entries = [entry.model_dump()
+                                for entry in report_data.data]
+            else:
+                data_entries = report_data["data"]
+
+            for entry in data_entries:
                 process_name = entry.get("processName")
                 if "children" in entry and isinstance(entry["children"], list):
-                    all_files.extend(collect_files(entry["children"], process_name))
+                    all_files.extend(collect_files(
+                        entry["children"], process_name))
 
             if not all_files:
                 self._raise_error(611, "No files found in the report.")
@@ -282,7 +315,8 @@ class Reports:
                 ]
             ]
         except Exception as e:
-            self._raise_error(612, f"Failed to extract all files from report: {e}")
+            self._raise_error(
+                612, f"Failed to extract all files from report: {e}")
 
     def _raise_error(self, code: int, message: str) -> None:
         """
@@ -300,7 +334,7 @@ class Reports:
 
     def upload_report_file(
         self, report_id: str, local_file_path: str, dir: Optional[str] = None
-    ) -> dict:
+    ) -> FileUploadResponse:
         """
         Uploads a file to a specific report.
 
@@ -310,41 +344,59 @@ class Reports:
             dir (Optional[str]): The directory to upload the file to. Defaults to None.
 
         Returns:
-            dict: Information about the uploaded file.
+            FileUploadResponse: Information about the uploaded file.
 
         Raises:
             RuntimeError: If uploading the file fails.
         """
         try:
+
+            upload_request = FileUploadRequest(
+                local_file_path=local_file_path,
+                report_id=report_id,
+                target_dir=dir
+            )
+
             # Fetch the latest attempt_id if not provided
-            report_paths = self.get_all_report_paths(report_id)
+            report_paths_response = self.get_all_report_paths(report_id)
             attempt_id = (
-                report_paths[0].split("/report-resources/")[1].split("/pubweb")[0]
+                report_paths_response.paths[0].split(
+                    "/report-resources/")[1].split("/pubweb")[0]
             )
 
             # Construct the upload endpoint
             upload_endpoint = f"/api/run/v1/{report_id}/reports/upload/{attempt_id}"
 
             # Guess the MIME type of the file
-            mime_type, _ = mimetypes.guess_type(local_file_path)
+            mime_type, _ = mimetypes.guess_type(upload_request.local_file_path)
             if not mime_type:
                 mime_type = "application/octet-stream"  # Default to binary stream
 
             # Open the file in binary mode
-            with open(local_file_path, "rb") as file:
-                files = {"file": (local_file_path.split("/")[-1], file, mime_type)}
-                data = {"dir": dir} if dir else {}
+            filename = upload_request.local_file_path.split("/")[-1]
+            with open(upload_request.local_file_path, "rb") as file:
+                files = {"file": (filename, file, mime_type)}
+                data = {
+                    "dir": upload_request.target_dir} if upload_request.target_dir else {}
 
                 # Perform the upload
                 response = self.client.call(
                     "POST", upload_endpoint, files=files, data=data
                 )
 
-            return response
+            return FileUploadResponse(
+                success=True,
+                message=f"File '{filename}' uploaded successfully",
+                file_id=response.get("file_id")
+            )
         except Exception as e:
-            self._raise_error(602, f"Failed to upload file to report: {e}")
+            return FileUploadResponse(
+                success=False,
+                message=f"Failed to upload file to report: {e}",
+                file_id=None
+            )
 
-    def get_all_report_paths(self, report_id: str) -> list:
+    def get_all_report_paths(self, report_id: str) -> ReportPathsResponse:
         """
         Gets unique report directories and attempt IDs for a specific report.
 
@@ -352,7 +404,7 @@ class Reports:
             report_id (str): The ID of the report.
 
         Returns:
-            list: A list of unique report directories.
+            ReportPathsResponse: A structured response containing unique report paths.
 
         Raises:
             Exception: If the API call fails or no reports are found.
@@ -372,7 +424,11 @@ class Reports:
             unique_paths = {
                 entry.get("routePath") for entry in reports if "routePath" in entry
             }
-            return list(unique_paths)
+
+            return ReportPathsResponse(
+                paths=list(unique_paths),
+                total_count=len(unique_paths)
+            )
         except Exception as e:
             self._raise_error(602, f"Failed to fetch report directories: {e}")
 
@@ -391,14 +447,14 @@ class Reports:
         """
         try:
             # Get all routePaths for the report
-            all_paths = self.get_all_report_paths(report_id)
+            all_paths_response = self.get_all_report_paths(report_id)
 
-            if not all_paths:
+            if not all_paths_response.paths:
                 raise ValueError("No reports found.")
 
             # Extract directories after 'pubweb'
             report_dirs = set()
-            for route_path in all_paths:
+            for route_path in all_paths_response.paths:
                 if "pubweb/" in route_path:
                     dir_after_pubweb = route_path.split("pubweb/")[-1]
                     report_dirs.add(dir_after_pubweb)
@@ -409,7 +465,8 @@ class Reports:
             return list(report_dirs)
 
         except Exception as e:
-            self._raise_error(603, f"Failed to fetch possible directories: {e}")
+            self._raise_error(
+                603, f"Failed to fetch possible directories: {e}")
 
     def upload_session_history(self, report_id: str, dir: Optional[str] = None) -> dict:
         """
@@ -427,7 +484,8 @@ class Reports:
         """
         try:
             if not self.enable_session_history:
-                raise RuntimeError("Session history functionality is disabled.")
+                raise RuntimeError(
+                    "Session history functionality is disabled.")
 
             # Prepare session history file
             history_file_path = self.prepare_session_history()

@@ -4,6 +4,7 @@ viafoundry_errors.log
 viafoundry_sdk.egg-info
 viafoundry/__pycache__
 viafoundry/bin/__pycache__
+viafoundry/models/__pycache__
 tests/__pycache__
 .DS_Store
 viafoundry/.DS_Store

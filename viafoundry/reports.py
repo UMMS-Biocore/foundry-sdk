@@ -520,9 +520,8 @@ class Reports:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             history_file_path = f"session_history_{timestamp}.txt"
 
-            # Save the session history to the file
-            with open(history_file_path, "w") as history_file:
-                ipython.magic(f"history -f {history_file_path}")
+            # Save the session history to the file using run_line_magic (recommended)
+            ipython.run_line_magic("history", f"-f {history_file_path}")
 
             return history_file_path
         except Exception as e:

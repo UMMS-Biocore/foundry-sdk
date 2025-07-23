@@ -1,7 +1,3 @@
-"""
-FIXME: Resolve Circular dependency with ViaFoundryClient
-"""
-
 import pandas as pd
 import os
 import requests

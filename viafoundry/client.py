@@ -3,6 +3,7 @@ from viafoundry.auth import Auth
 from requests.exceptions import RequestException, MissingSchema
 from viafoundry.reports import Reports
 from viafoundry.process import Process
+from viafoundry.metadata import Metadata 
 import logging
 from typing import Optional, Union, Dict
 
@@ -18,6 +19,7 @@ class ViaFoundryClient:
         auth (Auth): The authentication handler.
         reports (Reports): The reports handler.
         process (Process): The process handler.
+        metadata (Metadata): The metadata handler.  # <-- Add this line
         endpoints_cache (Optional[Dict]): Cache for discovered endpoints.
     """
 
@@ -37,8 +39,10 @@ class ViaFoundryClient:
             logging.info("Authentication initialized successfully.")
             self.reports = Reports(self, enable_session_history=enable_session_history)
             logging.info("Reports functionality initialized successfully.")
-            self.process = Process(self)  # Add Process integration
+            self.process = Process(self) # Process handler initialization
             logging.info("Process functionality initialized successfully.")
+            self.metadata = Metadata(self)  # Metadata handler initialization
+            logging.info("Metadata functionality initialized successfully.")
 
         except Exception as e:
             logging.error("Initialization error", exc_info=True)

@@ -1,4 +1,17 @@
 from copy import deepcopy
+from typing import Optional, Union
+from .models.domain.metadata import (
+    ProjectCreate,
+    ProjectUpdate,
+    CollectionCreate,
+    CollectionUpdate,
+    FieldCreate,
+    FieldUpdate,
+    DataEntryUpdate,
+    SearchParams,
+    FileAddRequest,
+)
+
 
 class Metadata:
     """
@@ -18,12 +31,12 @@ class Metadata:
         self.client = client
 
     # --- Project Methods ---
-    def search_projects(self, search_params: dict = None) -> dict:
+    def search_projects(self, search_params: Optional[Union[dict, SearchParams]] = None) -> dict:
         """
         Searches for projects using the metadata API.
 
         Args:
-            search_params (dict, optional): Search parameters for the project search. Defaults to None.
+            search_params (dict or SearchParams, optional): Search parameters for the project search. Defaults to None.
 
         Returns:
             dict: The search results for projects.
@@ -33,17 +46,21 @@ class Metadata:
         """
         try:
             endpoint = "/api/v1/vmeta/project/search"
-            data = search_params if search_params is not None else {}
+            if isinstance(search_params, SearchParams):
+                data = search_params.model_dump(exclude_none=True)
+            else:
+                data = search_params if search_params is not None else {}
             return self.client.call("POST", endpoint, data=data)
         except Exception as e:
-            raise Exception(f"Error 2001: Failed to search projects: {e}") from e
+            raise Exception(
+                f"Error 2001: Failed to search projects: {e}") from e
 
-    def create_project(self, project_data: dict) -> dict:
+    def create_project(self, project_data: Union[dict, ProjectCreate]) -> dict:
         """
         Creates a new metadata project.
 
         Args:
-            project_data (dict): Data required to create the project.
+            project_data (dict or ProjectCreate): Data required to create the project.
 
         Returns:
             dict: The created project.
@@ -52,9 +69,14 @@ class Metadata:
             Exception: If the creation fails.
         """
         try:
-            return self.client.call("POST", "/api/v1/vmeta/project/create", data=project_data)
+            if isinstance(project_data, ProjectCreate):
+                data = project_data.model_dump(exclude_none=True)
+            else:
+                data = project_data
+            return self.client.call("POST", "/api/v1/vmeta/project/create", data=data)
         except Exception as e:
-            raise Exception(f"Error 2002: Failed to create project: {e}") from e
+            raise Exception(
+                f"Error 2002: Failed to create project: {e}") from e
 
     def get_project(self, project_id: str) -> dict:
         """
@@ -72,15 +94,16 @@ class Metadata:
         try:
             return self.client.call("GET", f"/api/v1/vmeta/project/{project_id}")
         except Exception as e:
-            raise Exception(f"Error 2003: Failed to get project {project_id}: {e}") from e
+            raise Exception(
+                f"Error 2003: Failed to get project {project_id}: {e}") from e
 
-    def update_project(self, project_id: str, update_data: dict) -> dict:
+    def update_project(self, project_id: str, update_data: Union[dict, ProjectUpdate]) -> dict:
         """
         Updates an existing project.
 
         Args:
             project_id (str): The ID of the project to update.
-            update_data (dict): The data to update in the project.
+            update_data (dict or ProjectUpdate): The data to update in the project.
 
         Returns:
             dict: The updated project.
@@ -89,9 +112,14 @@ class Metadata:
             Exception: If update fails.
         """
         try:
-            return self.client.call("PATCH", f"/api/v1/vmeta/project/{project_id}", data=update_data)
+            if isinstance(update_data, ProjectUpdate):
+                data = update_data.model_dump(exclude_none=True)
+            else:
+                data = update_data
+            return self.client.call("PATCH", f"/api/v1/vmeta/project/{project_id}", data=data)
         except Exception as e:
-            raise Exception(f"Error 2004: Failed to update project {project_id}: {e}") from e
+            raise Exception(
+                f"Error 2004: Failed to update project {project_id}: {e}") from e
 
     def delete_project(self, project_id: str) -> dict:
         """
@@ -109,15 +137,16 @@ class Metadata:
         try:
             return self.client.call("DELETE", f"/api/v1/vmeta/project/{project_id}")
         except Exception as e:
-            raise Exception(f"Error 2005: Failed to delete project {project_id}: {e}") from e
-    
+            raise Exception(
+                f"Error 2005: Failed to delete project {project_id}: {e}") from e
+
     # --- Collection Methods ---
-    def search_collections(self, search_params: dict = None) -> dict:
+    def search_collections(self, search_params: Optional[Union[dict, SearchParams]] = None) -> dict:
         """
         Searches for collections.
 
         Args:
-            search_params (dict, optional): Collection search filters. Defaults to None.
+            search_params (dict or SearchParams, optional): Collection search filters. Defaults to None.
 
         Returns:
             dict: The list of collections.
@@ -126,16 +155,21 @@ class Metadata:
             Exception: If the search fails.
         """
         try:
-            return self.client.call("POST", "/api/v1/vmeta/collection/search", data=search_params or {})
+            if isinstance(search_params, SearchParams):
+                data = search_params.model_dump(exclude_none=True)
+            else:
+                data = search_params or {}
+            return self.client.call("POST", "/api/v1/vmeta/collection/search", data=data)
         except Exception as e:
-            raise Exception(f"Error 2011: Failed to search collections: {e}") from e
+            raise Exception(
+                f"Error 2011: Failed to search collections: {e}") from e
 
-    def create_collection(self, collection_data: dict) -> dict:
+    def create_collection(self, collection_data: Union[dict, CollectionCreate]) -> dict:
         """
         Creates a new collection.
 
         Args:
-            collection_data (dict): The collection data.
+            collection_data (dict or CollectionCreate): The collection data.
 
         Returns:
             dict: The created collection.
@@ -144,9 +178,14 @@ class Metadata:
             Exception: If creation fails.
         """
         try:
-            return self.client.call("POST", "/api/v1/vmeta/collection/create", data=collection_data)
+            if isinstance(collection_data, CollectionCreate):
+                data = collection_data.model_dump(exclude_none=True)
+            else:
+                data = collection_data
+            return self.client.call("POST", "/api/v1/vmeta/collection/create", data=data)
         except Exception as e:
-            raise Exception(f"Error 2012: Failed to create collection: {e}") from e
+            raise Exception(
+                f"Error 2012: Failed to create collection: {e}") from e
 
     def get_collection(self, collection_id: str) -> dict:
         """
@@ -164,15 +203,16 @@ class Metadata:
         try:
             return self.client.call("GET", f"/api/v1/vmeta/collection/{collection_id}")
         except Exception as e:
-            raise Exception(f"Error 2013: Failed to get collection {collection_id}: {e}") from e
+            raise Exception(
+                f"Error 2013: Failed to get collection {collection_id}: {e}") from e
 
-    def update_collection(self, collection_id: str, update_data: dict) -> dict:
+    def update_collection(self, collection_id: str, update_data: Union[dict, CollectionUpdate]) -> dict:
         """
         Updates a collection.
 
         Args:
             collection_id (str): The ID of the collection.
-            update_data (dict): The data to update.
+            update_data (dict or CollectionUpdate): The data to update.
 
         Returns:
             dict: The updated collection.
@@ -181,9 +221,14 @@ class Metadata:
             Exception: If update fails.
         """
         try:
-            return self.client.call("PATCH", f"/api/v1/vmeta/collection/{collection_id}", data=update_data)
+            if isinstance(update_data, CollectionUpdate):
+                data = update_data.model_dump(exclude_none=True)
+            else:
+                data = update_data
+            return self.client.call("PATCH", f"/api/v1/vmeta/collection/{collection_id}", data=data)
         except Exception as e:
-            raise Exception(f"Error 2014: Failed to update collection {collection_id}: {e}") from e
+            raise Exception(
+                f"Error 2014: Failed to update collection {collection_id}: {e}") from e
 
     def delete_collection(self, collection_id: str) -> dict:
         """
@@ -201,15 +246,16 @@ class Metadata:
         try:
             return self.client.call("DELETE", f"/api/v1/vmeta/collection/{collection_id}")
         except Exception as e:
-            raise Exception(f"Error 2015: Failed to delete collection {collection_id}: {e}") from e
-    
+            raise Exception(
+                f"Error 2015: Failed to delete collection {collection_id}: {e}") from e
+
     # --- Field Methods ---
-    def search_fields(self, search_params: dict = None) -> dict:
+    def search_fields(self, search_params: Optional[Union[dict, SearchParams]] = None) -> dict:
         """
         Searches for metadata fields.
 
         Args:
-            search_params (dict, optional): Filters for the field search.
+            search_params (dict or SearchParams, optional): Filters for the field search.
 
         Returns:
             dict: The list of fields.
@@ -218,16 +264,20 @@ class Metadata:
             Exception: If the search fails.
         """
         try:
-            return self.client.call("POST", "/api/v1/vmeta/field/search", data=search_params or {})
+            if isinstance(search_params, SearchParams):
+                data = search_params.model_dump(exclude_none=True)
+            else:
+                data = search_params or {}
+            return self.client.call("POST", "/api/v1/vmeta/field/search", data=data)
         except Exception as e:
             raise Exception(f"Error 2021: Failed to search fields: {e}") from e
 
-    def create_field(self, field_data: dict) -> dict:
+    def create_field(self, field_data: Union[dict, FieldCreate]) -> dict:
         """
         Creates a new metadata field.
 
         Args:
-            field_data (dict): The data for the new field.
+            field_data (dict or FieldCreate): The data for the new field.
 
         Returns:
             dict: The created field.
@@ -236,7 +286,11 @@ class Metadata:
             Exception: If creation fails.
         """
         try:
-            return self.client.call("POST", "/api/v1/vmeta/field/create", data=field_data)
+            if isinstance(field_data, FieldCreate):
+                data = field_data.model_dump(exclude_none=True)
+            else:
+                data = field_data
+            return self.client.call("POST", "/api/v1/vmeta/field/create", data=data)
         except Exception as e:
             raise Exception(f"Error 2022: Failed to create field: {e}") from e
 
@@ -256,15 +310,16 @@ class Metadata:
         try:
             return self.client.call("GET", f"/api/v1/vmeta/field/{field_id}")
         except Exception as e:
-            raise Exception(f"Error 2023: Failed to get field {field_id}: {e}") from e
+            raise Exception(
+                f"Error 2023: Failed to get field {field_id}: {e}") from e
 
-    def update_field(self, field_id: str, update_data: dict) -> dict:
+    def update_field(self, field_id: str, update_data: Union[dict, FieldUpdate]) -> dict:
         """
         Updates a metadata field.
 
         Args:
             field_id (str): ID of the field to update.
-            update_data (dict): Updated field data.
+            update_data (dict or FieldUpdate): Updated field data.
 
         Returns:
             dict: Updated field.
@@ -273,9 +328,14 @@ class Metadata:
             Exception: If update fails.
         """
         try:
-            return self.client.call("PATCH", f"/api/v1/vmeta/field/{field_id}", data=update_data)
+            if isinstance(update_data, FieldUpdate):
+                data = update_data.model_dump(exclude_none=True)
+            else:
+                data = update_data
+            return self.client.call("PATCH", f"/api/v1/vmeta/field/{field_id}", data=data)
         except Exception as e:
-            raise Exception(f"Error 2024: Failed to update field {field_id}: {e}") from e
+            raise Exception(
+                f"Error 2024: Failed to update field {field_id}: {e}") from e
 
     def delete_field(self, field_id: str) -> dict:
         """
@@ -293,8 +353,9 @@ class Metadata:
         try:
             return self.client.call("DELETE", f"/api/v1/vmeta/field/{field_id}")
         except Exception as e:
-            raise Exception(f"Error 2025: Failed to delete field {field_id}: {e}") from e
-    
+            raise Exception(
+                f"Error 2025: Failed to delete field {field_id}: {e}") from e
+
     def get_collection_fields(self, collection_id: str) -> dict:
         """
         Retrieves a metadata field by collection_id.
@@ -316,7 +377,8 @@ class Metadata:
             }
             return self.search_fields(search_params)
         except Exception as e:
-            raise Exception(f"Error 2026: Failed to get fields for collection: {collection_id}: {e}") from e
+            raise Exception(
+                f"Error 2026: Failed to get fields for collection: {collection_id}: {e}") from e
 
     def get_project_fields(self, project_id: str) -> dict:
         """
@@ -341,19 +403,19 @@ class Metadata:
             all_fields = []
             for collection in collections["data"]:
                 fields = self.get_collection_fields(collection['_id'])
-               
+
                 # fields["data"] is expected to be a list of field dicts
                 if "data" in fields and isinstance(fields["data"], list):
                     all_fields.extend(fields["data"])
 
             return {"data": all_fields}
         except Exception as e:
-            raise Exception(f"Error 2027: Failed to get fields for project {project_id}: {e}") from e
+            raise Exception(
+                f"Error 2027: Failed to get fields for project {project_id}: {e}") from e
 
-
-    
     # --- Dataset Methods ---
-    def search_dataset_files(self, dataset_id: str, filter_data: dict = None) -> dict:
+
+    def search_dataset_files(self, dataset_id: str, filter_data: Optional[Union[dict, SearchParams]] = None) -> dict:
         """
         Lists files associated with a dataset.
 
@@ -368,17 +430,22 @@ class Metadata:
             Exception: If listing fails.
         """
         try:
-            return self.client.call("POST", f"/api/v1/vmeta/dataset/{dataset_id}/files/search", data=filter_data or {})
+            if isinstance(filter_data, SearchParams):
+                data = filter_data.model_dump(exclude_none=True)
+            else:
+                data = filter_data or {}
+            return self.client.call("POST", f"/api/v1/vmeta/dataset/{dataset_id}/files/search", data=data)
         except Exception as e:
-            raise Exception(f"Error 2036: Failed to search dataset files for {dataset_id}: {e}") from e
+            raise Exception(
+                f"Error 2036: Failed to search dataset files for {dataset_id}: {e}") from e
 
-    def add_files_to_dataset(self, dataset_id: str, file_data: dict) -> dict:
+    def add_files_to_dataset(self, dataset_id: str, file_data: Union[dict, FileAddRequest]) -> dict:
         """
         Adds files to a dataset.
 
         Args:
             dataset_id (str): ID of the dataset.
-            file_data (dict): File metadata.
+            file_data (dict or FileAddRequest): File metadata.
 
         Returns:
             dict: Confirmation of file addition.
@@ -387,12 +454,17 @@ class Metadata:
             Exception: If operation fails.
         """
         try:
-            return self.client.call("POST", f"/api/v1/vmeta/dataset/{dataset_id}/addFiles", data=file_data)
+            if isinstance(file_data, FileAddRequest):
+                data = file_data.model_dump(exclude_none=True)
+            else:
+                data = file_data
+            return self.client.call("POST", f"/api/v1/vmeta/dataset/{dataset_id}/addFile", data=data)
         except Exception as e:
-            raise Exception(f"Error 2037: Failed to add files to dataset {dataset_id}: {e}") from e
+            raise Exception(
+                f"Error 2037: Failed to add files to dataset {dataset_id}: {e}") from e
 
     # --- Data Methods ---
-    def search_data(self, project_id: str, collection_name: str, filter_data: dict = None) -> dict:
+    def search_data(self, project_id: str, collection_name: str, filter_data: Optional[Union[dict, SearchParams]] = None) -> dict:
         """
         Searches data entries in a collection.
 
@@ -408,9 +480,14 @@ class Metadata:
             Exception: If search fails.
         """
         try:
-            return self.client.call("POST", f"/api/v1/vmeta/project/{project_id}/data/{collection_name}/search", data=filter_data or {})
+            if isinstance(filter_data, SearchParams):
+                data = filter_data.model_dump(exclude_none=True)
+            else:
+                data = filter_data or {}
+            return self.client.call("POST", f"/api/v1/vmeta/project/{project_id}/data/{collection_name}/search", data=data)
         except Exception as e:
-            raise Exception(f"Error 2041: Failed to search data for {collection_name}: {e}") from e
+            raise Exception(
+                f"Error 2041: Failed to search data for {collection_name}: {e}") from e
 
     def get_data(self, project_id: str, collection_name: str, data_id: str) -> dict:
         """
@@ -430,9 +507,10 @@ class Metadata:
         try:
             return self.client.call("GET", f"/api/v1/vmeta/project/{project_id}/data/{collection_name}/{data_id}")
         except Exception as e:
-            raise Exception(f"Error 2042: Failed to get data {data_id}: {e}") from e
+            raise Exception(
+                f"Error 2042: Failed to get data {data_id}: {e}") from e
 
-    def update_data(self, project_id: str, collection_name: str, data_id: str, update_data: dict) -> dict:
+    def update_data(self, project_id: str, collection_name: str, data_id: str, update_data: Union[dict, DataEntryUpdate]) -> dict:
         """
         Updates a data entry.
 
@@ -440,7 +518,7 @@ class Metadata:
             project_id (str): Project ID.
             collection_name (str): Collection name.
             data_id (str): Data entry ID.
-            update_data (dict): Update payload.
+            update_data (dict or DataEntryUpdate): Update payload.
 
         Returns:
             dict: Updated data entry.
@@ -449,9 +527,14 @@ class Metadata:
             Exception: If update fails.
         """
         try:
-            return self.client.call("PATCH", f"/api/v1/vmeta/project/{project_id}/data/{collection_name}/{data_id}", data=update_data)
+            if isinstance(update_data, DataEntryUpdate):
+                data = update_data.model_dump(exclude_none=True)
+            else:
+                data = update_data
+            return self.client.call("PATCH", f"/api/v1/vmeta/project/{project_id}/data/{collection_name}/{data_id}", data=data)
         except Exception as e:
-            raise Exception(f"Error 2043: Failed to update data {data_id}: {e}") from e
+            raise Exception(
+                f"Error 2043: Failed to update data {data_id}: {e}") from e
 
     def delete_data(self, project_id: str, collection_name: str, data_id: str) -> dict:
         """
@@ -471,7 +554,8 @@ class Metadata:
         try:
             return self.client.call("DELETE", f"/api/v1/vmeta/project/{project_id}/data/{collection_name}/{data_id}")
         except Exception as e:
-            raise Exception(f"Error 2044: Failed to delete data {data_id}: {e}") from e
+            raise Exception(
+                f"Error 2044: Failed to delete data {data_id}: {e}") from e
 
     # --- Helper Methods ---
 
@@ -500,7 +584,7 @@ class Metadata:
                         data[key] = owner_id
                     elif key == 'projectID':
                         if project_id is not None:
-                            data[key] = project_id     
+                            data[key] = project_id
                     elif key in ['perms', 'restrictTo']:
                         keys_to_delete.append(key)
                     else:

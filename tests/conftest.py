@@ -2,6 +2,7 @@ import pytest
 from unittest.mock import Mock
 from viafoundry.client import ViaFoundryClient
 from viafoundry.reports import Reports
+from viafoundry.metadata import Metadata
 
 
 @pytest.fixture
@@ -37,6 +38,12 @@ def reports(mock_client):
 
 
 @pytest.fixture
+def metadata(mock_client):
+    """Fixture for Metadata instance."""
+    return Metadata(mock_client)
+
+
+@pytest.fixture
 def sample_report_data():
     """Fixture for sample report data."""
     return {
@@ -52,4 +59,56 @@ def sample_report_data():
                 "children": [],
             },
         ]
+    }
+
+
+@pytest.fixture
+def sample_project_data():
+    """Fixture for sample project data."""
+    return {
+        "_id": "507f1f77bcf86cd799439011",
+        "name": "Test Project",
+        "label": "Test Project Label",
+        "description": "A test project",
+        "owner": {
+            "_id": "507f1f77bcf86cd799439012",
+            "username": "testuser",
+            "name": "Test User"
+        }
+    }
+
+
+@pytest.fixture
+def sample_collection_data():
+    """Fixture for sample collection data."""
+    return {
+        "_id": "507f1f77bcf86cd799439013",
+        "name": "Test Collection",
+        "label": "Test Collection Label",
+        "projectID": "507f1f77bcf86cd799439011",
+        "description": "A test collection",
+        "owner": {
+            "_id": "507f1f77bcf86cd799439012",
+            "username": "testuser",
+            "name": "Test User"
+        }
+    }
+
+
+@pytest.fixture
+def sample_field_data():
+    """Fixture for sample field data."""
+    return {
+        "_id": "507f1f77bcf86cd799439014",
+        "name": "Test Field",
+        "label": "Test Field Label",
+        "type": "String",
+        "collectionID": "507f1f77bcf86cd799439013",
+        "required": True,
+        "unique": False,
+        "owner": {
+            "_id": "507f1f77bcf86cd799439012",
+            "username": "testuser",
+            "name": "Test User"
+        }
     }

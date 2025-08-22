@@ -1,4 +1,4 @@
-# ViaFoundry SDK and CLI (v1.0.21)
+# ViaFoundry SDK and CLI (v1.0.22)
 
 The **ViaFoundry SDK and CLI** provide a powerful way to interact with ViaFoundry APIs. Whether you're a developer integrating with the API or a user looking for a simple command-line interface, this package has you covered.
 

@@ -62,22 +62,22 @@ class OwnerModel(BaseModel):
         None, description="Affiliation of the owner")
 
 
-class ProjectCreate(BaseModel):
+class CanvasCreate(BaseModel):
     """
-    Model for creating a new metadata project.
+    Model for creating a new metadata canvas.
     """
     id: Optional[str] = Field(None, alias="_id",
-                              description="Unique identifier for the project")
+                              description="Unique identifier for the canvas")
     name: str = Field(..., description="Name of the vmeta canvas")
     label: str = Field(..., description="Label of the vmeta canvas")
     perms: Optional[List[PermEntry]] = Field(
-        None, description="Permissions for the project")
+        None, description="Permissions for the canvas")
     dataPerms: Optional[List[PermEntry]] = Field(
-        None, description="Data permissions for the project")
+        None, description="Data permissions for the canvas")
     active: Optional[bool] = Field(
-        True, description="Is the project active? Defaults to True")
+        True, description="Is the canvas active? Defaults to True")
     createDefaultCollections: Optional[bool] = Field(
-        True, description="Create default collections for the project? Defaults to True")
+        True, description="Create default collections for the canvas? Defaults to True")
 
     @field_validator('id')
     @classmethod
@@ -89,12 +89,12 @@ class ProjectCreate(BaseModel):
         return v
 
 
-class ProjectUpdate(BaseModel):
+class CanvasUpdate(BaseModel):
     """
-    Model for updating an existing metadata project.
+    Model for updating an existing metadata canvas.
     """
-    name: Optional[str] = Field(..., description="Name of the project")
-    label: Optional[str] = Field(..., description="Label of the project")
+    name: Optional[str] = Field(..., description="Name of the canvas")
+    label: Optional[str] = Field(..., description="Label of the canvas")
 
 
 class CollectionCreate(BaseModel):
@@ -107,8 +107,8 @@ class CollectionCreate(BaseModel):
     label: str = Field(..., description="Label of the collection")
     version: Optional[int] = Field(None,
                                    description="Version of the collection")
-    projectID: str = Field(...,
-                           description="ID of the project this collection belongs to")
+    canvasID: str = Field(...,
+                           description="ID of the canvas this collection belongs to")
     dataPerms: Optional[List[PermEntry]] = Field(
         None, description="Data permissions for the collection")
     perms: Optional[List[PermEntry]] = Field(
@@ -116,13 +116,13 @@ class CollectionCreate(BaseModel):
     dataDeleteProtected: Optional[bool] = Field(
         None, description="Protect Data Deletion?")
 
-    @field_validator('projectID', 'id')
+    @field_validator('canvasID', 'id')
     @classmethod
-    def validate_project_id(cls, v):
-        """Validate projectID is a valid MongoDB ObjectId (24 hex characters)."""
+    def validate_canvas_id(cls, v):
+        """Validate canvasID is a valid MongoDB ObjectId (24 hex characters)."""
         if not re.match(r'^[0-9a-fA-F]{24}$', v):
             raise ValueError(
-                "projectID must be a valid MongoDB ObjectId (24 hexadecimal characters)")
+                "canvasID must be a valid MongoDB ObjectId (24 hexadecimal characters)")
         return v
 
 
@@ -134,8 +134,8 @@ class CollectionUpdate(BaseModel):
     label: Optional[str] = Field(None, description="Label of the collection")
     version: Optional[int] = Field(None,
                                    description="Version of the collection")
-    projectID: Optional[str] = Field(None,
-                                     description="ID of the project this collection belongs to")
+    canvasID: Optional[str] = Field(None,
+                                     description="ID of the canvas this collection belongs to")
     dataPerms: Optional[List[PermEntry]] = Field(
         None, description="Permissions for the collection")
     perms: Optional[List[PermEntry]] = Field(
@@ -143,13 +143,13 @@ class CollectionUpdate(BaseModel):
     dataDeleteProtected: Optional[bool] = Field(
         None, description="Protect Data Deletion?")
 
-    @field_validator('projectID')
+    @field_validator('canvasID')
     @classmethod
-    def validate_project_id(cls, v):
-        """Validate projectID is a valid MongoDB ObjectId (24 hex characters)."""
+    def validate_canvas_id(cls, v):
+        """Validate canvasID is a valid MongoDB ObjectId (24 hex characters)."""
         if not re.match(r'^[0-9a-fA-F]{24}$', v):
             raise ValueError(
-                "projectID must be a valid MongoDB ObjectId (24 hexadecimal characters)")
+                "canvasID must be a valid MongoDB ObjectId (24 hexadecimal characters)")
         return v
 
 
@@ -348,8 +348,8 @@ class DatasetResponse(BaseModel):
     name: str = Field(..., description="Name of the dataset")
     description: Optional[str] = Field(
         None, description="Description of the dataset")
-    projectID: str = Field(...,
-                           description="ID of the project this dataset belongs to")
+    canvasID: str = Field(...,
+                           description="ID of the canvas this dataset belongs to")
     files: Optional[List[DatasetFileInfo]] = Field(
         default_factory=list, description="Files in the dataset")
     owner: Optional[OwnerModel] = Field(
@@ -514,7 +514,7 @@ class SearchParams(BaseModel):
     )
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "filter": {
                     "name": "test",
@@ -548,16 +548,16 @@ class FileAddRequest(BaseModel):
     """
     Model for adding files to a dataset.
     """
-    projectId: str = Field(..., description="The ID of the study tracker project",
+    canvasID: str = Field(..., description="The ID of the study tracker canvas",
                            example="66269972dc000cff1c8a54b0")
     file: Dict[str, Any] = Field(...,
                                  description="File Object associated with the dataset")
 
-    @field_validator('projectId')
+    @field_validator('canvasID')
     @classmethod
-    def validate_project_id(cls, v):
-        """Validate projectId is a valid MongoDB ObjectId (24 hex characters)."""
+    def validate_canvas_id(cls, v):
+        """Validate canvasId is a valid MongoDB ObjectId (24 hex characters)."""
         if not re.match(r'^[0-9a-fA-F]{24}$', v):
             raise ValueError(
-                "projectId must be a valid MongoDB ObjectId (24 hexadecimal characters)")
+                "canvasId must be a valid MongoDB ObjectId (24 hexadecimal characters)")
         return v

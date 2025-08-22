@@ -3,8 +3,8 @@ from unittest.mock import Mock, patch
 from copy import deepcopy
 from viafoundry.metadata import Metadata
 from viafoundry.models.domain.metadata import (
-    ProjectCreate,
-    ProjectUpdate,
+    CanvasCreate,
+    CanvasUpdate,
     CollectionCreate,
     CollectionUpdate,
     FieldCreate,
@@ -35,185 +35,185 @@ class TestMetadata:
         """Test Metadata initialization."""
         assert metadata.client == mock_client
 
-    # --- Project Methods Tests ---
+    # --- Canvas Methods Tests ---
 
-    def test_search_projects_with_dict(self, metadata, mock_client):
-        """Test searching projects with dict search params."""
-        mock_response = {"data": [{"name": "project1"}]}
+    def test_search_canvas_with_dict(self, metadata, mock_client):
+        """Test searching canvas with dict search params."""
+        mock_response = {"data": [{"name": "canvas1"}]}
         mock_client.call.return_value = mock_response
 
         search_params = {"filter": {"name": "test"}}
-        result = metadata.search_projects(search_params)
+        result = metadata.search_canvas(search_params)
 
         mock_client.call.assert_called_once_with(
-            "POST", "/api/v1/vmeta/project/search", data=search_params
+            "POST", "/api/v1/vmeta/canvas/search", data=search_params
         )
         assert result == mock_response
 
-    def test_search_projects_with_search_params_model(self, metadata, mock_client):
-        """Test searching projects with SearchParams model."""
-        mock_response = {"data": [{"name": "project1"}]}
+    def test_search_canvas_with_search_params_model(self, metadata, mock_client):
+        """Test searching canvas with SearchParams model."""
+        mock_response = {"data": [{"name": "canvas1"}]}
         mock_client.call.return_value = mock_response
 
         search_params = SearchParams(take=10, skip=0)
-        result = metadata.search_projects(search_params)
+        result = metadata.search_canvas(search_params)
 
         expected_data = search_params.model_dump(exclude_none=True)
         mock_client.call.assert_called_once_with(
-            "POST", "/api/v1/vmeta/project/search", data=expected_data
+            "POST", "/api/v1/vmeta/canvas/search", data=expected_data
         )
         assert result == mock_response
 
-    def test_search_projects_with_none(self, metadata, mock_client):
-        """Test searching projects with no search params."""
+    def test_search_canvas_with_none(self, metadata, mock_client):
+        """Test searching canvas with no search params."""
         mock_response = {"data": []}
         mock_client.call.return_value = mock_response
 
-        result = metadata.search_projects()
+        result = metadata.search_canvas()
 
         mock_client.call.assert_called_once_with(
-            "POST", "/api/v1/vmeta/project/search", data={}
+            "POST", "/api/v1/vmeta/canvas/search", data={}
         )
         assert result == mock_response
 
-    def test_search_projects_error(self, metadata, mock_client):
-        """Test error handling in search_projects."""
+    def test_search_canvas_error(self, metadata, mock_client):
+        """Test error handling in search_canvas."""
         mock_client.call.side_effect = Exception("API Error")
 
         with pytest.raises(Exception) as exc_info:
-            metadata.search_projects()
+            metadata.search_canvas()
 
-        assert "Error 2001: Failed to search projects: API Error" in str(
+        assert "Error 2001: Failed to search canvas: API Error" in str(
             exc_info.value)
 
-    def test_create_project_with_dict(self, metadata, mock_client):
-        """Test creating project with dict data."""
-        mock_response = {"_id": "project123", "name": "Test Project"}
+    def test_create_canvas_with_dict(self, metadata, mock_client):
+        """Test creating canvas with dict data."""
+        mock_response = {"_id": "canvas123", "name": "Test Canvas"}
         mock_client.call.return_value = mock_response
 
-        project_data = {"name": "Test Project", "label": "Test Label"}
-        result = metadata.create_project(project_data)
+        canvas_data = {"name": "Test Canvas", "label": "Test Label"}
+        result = metadata.create_canvas(canvas_data)
 
         mock_client.call.assert_called_once_with(
-            "POST", "/api/v1/vmeta/project/create", data=project_data
+            "POST", "/api/v1/vmeta/canvas/create", data=canvas_data
         )
         assert result == mock_response
 
-    def test_create_project_with_model(self, metadata, mock_client):
-        """Test creating project with ProjectCreate model."""
-        mock_response = {"_id": "project123", "name": "Test Project"}
+    def test_create_canvas_with_model(self, metadata, mock_client):
+        """Test creating canvas with CanvasCreate model."""
+        mock_response = {"_id": "canvas123", "name": "Test Canvas"}
         mock_client.call.return_value = mock_response
 
-        project_data = ProjectCreate(name="Test Project", label="Test Label")
-        result = metadata.create_project(project_data)
+        canvas_data = CanvasCreate(name="Test Canvas", label="Test Label")
+        result = metadata.create_canvas(canvas_data)
 
-        expected_data = project_data.model_dump(exclude_none=True)
+        expected_data = canvas_data.model_dump(exclude_none=True)
         mock_client.call.assert_called_once_with(
-            "POST", "/api/v1/vmeta/project/create", data=expected_data
+            "POST", "/api/v1/vmeta/canvas/create", data=expected_data
         )
         assert result == mock_response
 
-    def test_create_project_error(self, metadata, mock_client):
-        """Test error handling in create_project."""
+    def test_create_canvas_error(self, metadata, mock_client):
+        """Test error handling in create_canvas."""
         mock_client.call.side_effect = Exception("Creation failed")
 
-        project_data = {"name": "Test Project", "label": "Test Label"}
+        canvas_data = {"name": "Test Canvas", "label": "Test Label"}
 
         with pytest.raises(Exception) as exc_info:
-            metadata.create_project(project_data)
+            metadata.create_canvas(canvas_data)
 
-        assert "Error 2002: Failed to create project: Creation failed" in str(
+        assert "Error 2002: Failed to create canvas: Creation failed" in str(
             exc_info.value)
 
-    def test_get_project_success(self, metadata, mock_client):
-        """Test getting project by ID."""
-        project_id = "project123"
-        mock_response = {"_id": project_id, "name": "Test Project"}
+    def test_get_canvas_success(self, metadata, mock_client):
+        """Test getting canvas by ID."""
+        canvas_id = "canvas123"
+        mock_response = {"_id": canvas_id, "name": "Test Canvas"}
         mock_client.call.return_value = mock_response
 
-        result = metadata.get_project(project_id)
+        result = metadata.get_canvas(canvas_id)
 
         mock_client.call.assert_called_once_with(
-            "GET", f"/api/v1/vmeta/project/{project_id}"
+            "GET", f"/api/v1/vmeta/canvas/{canvas_id}"
         )
         assert result == mock_response
 
-    def test_get_project_error(self, metadata, mock_client):
-        """Test error handling in get_project."""
-        project_id = "project123"
+    def test_get_canvas_error(self, metadata, mock_client):
+        """Test error handling in get_canvas."""
+        canvas_id = "canvas123"
         mock_client.call.side_effect = Exception("Not found")
 
         with pytest.raises(Exception) as exc_info:
-            metadata.get_project(project_id)
+            metadata.get_canvas(canvas_id)
 
-        assert f"Error 2003: Failed to get project {project_id}: Not found" in str(
+        assert f"Error 2003: Failed to get canvas {canvas_id}: Not found" in str(
             exc_info.value)
 
-    def test_update_project_with_dict(self, metadata, mock_client):
-        """Test updating project with dict data."""
-        project_id = "project123"
-        mock_response = {"_id": project_id, "name": "Updated Project"}
+    def test_update_canvas_with_dict(self, metadata, mock_client):
+        """Test updating canvas with dict data."""
+        canvas_id = "canvas123"
+        mock_response = {"_id": canvas_id, "name": "Updated Canvas"}
         mock_client.call.return_value = mock_response
 
-        update_data = {"name": "Updated Project"}
-        result = metadata.update_project(project_id, update_data)
+        update_data = {"name": "Updated Canvas"}
+        result = metadata.update_canvas(canvas_id, update_data)
 
         mock_client.call.assert_called_once_with(
-            "PATCH", f"/api/v1/vmeta/project/{project_id}", data=update_data
+            "PATCH", f"/api/v1/vmeta/canvas/{canvas_id}", data=update_data
         )
         assert result == mock_response
 
-    def test_update_project_with_model(self, metadata, mock_client):
-        """Test updating project with ProjectUpdate model."""
-        project_id = "project123"
-        mock_response = {"_id": project_id, "name": "Updated Project"}
+    def test_update_canvas_with_model(self, metadata, mock_client):
+        """Test updating canvas with CanvasUpdate model."""
+        canvas_id = "canvas123"
+        mock_response = {"_id": canvas_id, "name": "Updated Canvas"}
         mock_client.call.return_value = mock_response
 
-        update_data = ProjectUpdate(
-            name="Updated Project", label="Updated Label")
-        result = metadata.update_project(project_id, update_data)
+        update_data = CanvasUpdate(
+            name="Updated Canvas", label="Updated Label")
+        result = metadata.update_canvas(canvas_id, update_data)
 
         expected_data = update_data.model_dump(exclude_none=True)
         mock_client.call.assert_called_once_with(
-            "PATCH", f"/api/v1/vmeta/project/{project_id}", data=expected_data
+            "PATCH", f"/api/v1/vmeta/canvas/{canvas_id}", data=expected_data
         )
         assert result == mock_response
 
-    def test_update_project_error(self, metadata, mock_client):
-        """Test error handling in update_project."""
-        project_id = "project123"
+    def test_update_canvas_error(self, metadata, mock_client):
+        """Test error handling in update_canvas."""
+        canvas_id = "canvas123"
         mock_client.call.side_effect = Exception("Update failed")
 
-        update_data = {"name": "Updated Project"}
+        update_data = {"name": "Updated canvas"}
 
         with pytest.raises(Exception) as exc_info:
-            metadata.update_project(project_id, update_data)
+            metadata.update_canvas(canvas_id, update_data)
 
-        assert f"Error 2004: Failed to update project {project_id}: Update failed" in str(
+        assert f"Error 2004: Failed to update canvas {canvas_id}: Update failed" in str(
             exc_info.value)
 
-    def test_delete_project_success(self, metadata, mock_client):
-        """Test deleting project by ID."""
-        project_id = "project123"
-        mock_response = {"message": "Project deleted"}
+    def test_delete_canvas_success(self, metadata, mock_client):
+        """Test deleting canvas by ID."""
+        canvas_id = "canvas123"
+        mock_response = {"message": "canvas deleted"}
         mock_client.call.return_value = mock_response
 
-        result = metadata.delete_project(project_id)
+        result = metadata.delete_canvas(canvas_id)
 
         mock_client.call.assert_called_once_with(
-            "DELETE", f"/api/v1/vmeta/project/{project_id}"
+            "DELETE", f"/api/v1/vmeta/canvas/{canvas_id}"
         )
         assert result == mock_response
 
-    def test_delete_project_error(self, metadata, mock_client):
-        """Test error handling in delete_project."""
-        project_id = "project123"
+    def test_delete_canvas_error(self, metadata, mock_client):
+        """Test error handling in delete_canvas."""
+        canvas_id = "canvas123"
         mock_client.call.side_effect = Exception("Deletion failed")
 
         with pytest.raises(Exception) as exc_info:
-            metadata.delete_project(project_id)
+            metadata.delete_canvas(canvas_id)
 
-        assert f"Error 2005: Failed to delete project {project_id}: Deletion failed" in str(
+        assert f"Error 2005: Failed to delete canvas {canvas_id}: Deletion failed" in str(
             exc_info.value)
 
     # --- Collection Methods Tests ---
@@ -223,7 +223,7 @@ class TestMetadata:
         mock_response = {"data": [{"name": "collection1"}]}
         mock_client.call.return_value = mock_response
 
-        search_params = {"filter": {"projectID": "project123"}}
+        search_params = {"filter": {"canvasID": "canvas123"}}
         result = metadata.search_collections(search_params)
 
         mock_client.call.assert_called_once_with(
@@ -275,7 +275,7 @@ class TestMetadata:
         collection_data = {
             "name": "Test Collection",
             "label": "Test Label",
-            "projectID": "507f1f77bcf86cd799439011"
+            "canvasID": "507f1f77bcf86cd799439011"
         }
         result = metadata.create_collection(collection_data)
 
@@ -292,7 +292,7 @@ class TestMetadata:
         collection_data = CollectionCreate(
             name="Test Collection",
             label="Test Label",
-            projectID="507f1f77bcf86cd799439011",
+            canvasID="507f1f77bcf86cd799439011",
             dataDeleteProtected=True
         )
         result = metadata.create_collection(collection_data)
@@ -310,7 +310,7 @@ class TestMetadata:
         collection_data = {
             "name": "Test Collection",
             "label": "Test Label",
-            "projectID": "507f1f77bcf86cd799439011"
+            "canvasID": "507f1f77bcf86cd799439011"
         }
 
         with pytest.raises(Exception) as exc_info:
@@ -364,7 +364,7 @@ class TestMetadata:
         mock_client.call.return_value = mock_response
 
         update_data = CollectionUpdate(
-            name="Updated Collection", label="Updated Label", projectID="507f1f77bcf86cd799439011", dataDeleteProtected=False)
+            name="Updated Collection", label="Updated Label", canvasID="507f1f77bcf86cd799439011", dataDeleteProtected=False)
         result = metadata.update_collection(collection_id, update_data)
 
         expected_data = update_data.model_dump(exclude_none=True)
@@ -640,9 +640,9 @@ class TestMetadata:
         assert f"Error 2026: Failed to get fields for collection: {collection_id}: Search failed" in str(
             exc_info.value)
 
-    def test_get_project_fields_success(self, metadata, mock_client):
-        """Test getting all fields for a project."""
-        project_id = "project123"
+    def test_get_canvas_fields_success(self, metadata, mock_client):
+        """Test getting all fields for a canvas."""
+        canvas_id = "canvas123"
 
         # Mock search_collections response
         collections_response = {
@@ -658,12 +658,12 @@ class TestMetadata:
 
         with patch.object(metadata, 'search_collections', return_value=collections_response) as mock_search_collections:
             with patch.object(metadata, 'get_collection_fields', side_effect=[fields_response_1, fields_response_2]) as mock_get_fields:
-                result = metadata.get_project_fields(project_id)
+                result = metadata.get_canvas_fields(canvas_id)
 
         # Verify search_collections was called with correct parameters
         expected_search_params = {
             "filter": {
-                "projectID": project_id
+                "canvasID": canvas_id
             }
         }
         mock_search_collections.assert_called_once_with(expected_search_params)
@@ -677,26 +677,26 @@ class TestMetadata:
         assert result == {"data": [{"name": "field1"}, {
             "name": "field2"}, {"name": "field3"}]}
 
-    def test_get_project_fields_empty_collections(self, metadata, mock_client):
-        """Test getting fields for project with no collections."""
-        project_id = "project123"
+    def test_get_canvas_fields_empty_collections(self, metadata, mock_client):
+        """Test getting fields for canvas with no collections."""
+        canvas_id = "canvas123"
 
         collections_response = {"data": []}
 
         with patch.object(metadata, 'search_collections', return_value=collections_response):
-            result = metadata.get_project_fields(project_id)
+            result = metadata.get_canvas_fields(canvas_id)
 
         assert result == {"data": []}
 
-    def test_get_project_fields_error(self, metadata, mock_client):
-        """Test error handling in get_project_fields."""
-        project_id = "project123"
+    def test_get_canvas_fields_error(self, metadata, mock_client):
+        """Test error handling in get_canvas_fields."""
+        canvas_id = "canvas123"
 
         with patch.object(metadata, 'search_collections', side_effect=Exception("Search failed")):
             with pytest.raises(Exception) as exc_info:
-                metadata.get_project_fields(project_id)
+                metadata.get_canvas_fields(canvas_id)
 
-        assert f"Error 2027: Failed to get fields for project {project_id}: Search failed" in str(
+        assert f"Error 2027: Failed to get fields for canvas {canvas_id}: Search failed" in str(
             exc_info.value)
 
     # --- Dataset Methods Tests ---
@@ -743,7 +743,7 @@ class TestMetadata:
         """Test adding files to dataset with dict data."""
         dataset_id = "dataset123"
         file_data = {
-            "projectId": "66269972dc000cff1c8a54b0",
+            "canvasID": "66269972dc000cff1c8a54b0",
             "file": {"name": "test.csv", "path": "/data/test.csv"}
         }
         mock_response = {"message": "Files added"}
@@ -760,7 +760,7 @@ class TestMetadata:
         """Test adding files to dataset with FileAddRequest model."""
         dataset_id = "dataset123"
         file_data = FileAddRequest(
-            projectId="66269972dc000cff1c8a54b0",
+            canvasID="66269972dc000cff1c8a54b0",
             file={"name": "test.csv", "path": "/data/test.csv"}
         )
         mock_response = {"message": "Files added"}
@@ -777,7 +777,7 @@ class TestMetadata:
     def test_add_files_to_dataset_error(self, metadata, mock_client):
         """Test error handling in add_files_to_dataset."""
         dataset_id = "dataset123"
-        file_data = {"projectId": "test", "file": {}}
+        file_data = {"canvasID": "test", "file": {}}
         mock_client.call.side_effect = Exception("Add failed")
 
         with pytest.raises(Exception) as exc_info:
@@ -790,76 +790,76 @@ class TestMetadata:
 
     def test_search_data_success(self, metadata, mock_client):
         """Test searching data entries."""
-        project_id = "project123"
+        canvas_id = "canvas123"
         collection_name = "samples"
         filter_data = {"status": "active"}
         mock_response = {"data": [{"_id": "data1", "name": "Sample 1"}]}
         mock_client.call.return_value = mock_response
 
-        result = metadata.search_data(project_id, collection_name, filter_data)
+        result = metadata.search_data(canvas_id, collection_name, filter_data)
 
         mock_client.call.assert_called_once_with(
-            "POST", f"/api/v1/vmeta/project/{project_id}/data/{collection_name}/search", data=filter_data
+            "POST", f"/api/v1/vmeta/canvas/{canvas_id}/data/{collection_name}/search", data=filter_data
         )
         assert result == mock_response
 
     def test_search_data_no_filter(self, metadata, mock_client):
         """Test searching data entries without filter."""
-        project_id = "project123"
+        canvas_id = "canvas123"
         collection_name = "samples"
         mock_response = {"data": []}
         mock_client.call.return_value = mock_response
 
-        result = metadata.search_data(project_id, collection_name)
+        result = metadata.search_data(canvas_id, collection_name)
 
         mock_client.call.assert_called_once_with(
-            "POST", f"/api/v1/vmeta/project/{project_id}/data/{collection_name}/search", data={}
+            "POST", f"/api/v1/vmeta/canvas/{canvas_id}/data/{collection_name}/search", data={}
         )
         assert result == mock_response
 
     def test_search_data_error(self, metadata, mock_client):
         """Test error handling in search_data."""
-        project_id = "project123"
+        canvas_id = "canvas123"
         collection_name = "samples"
         mock_client.call.side_effect = Exception("Search failed")
 
         with pytest.raises(Exception) as exc_info:
-            metadata.search_data(project_id, collection_name)
+            metadata.search_data(canvas_id, collection_name)
 
         assert f"Error 2041: Failed to search data for {collection_name}: Search failed" in str(
             exc_info.value)
 
     def test_get_data_success(self, metadata, mock_client):
         """Test getting data entry by ID."""
-        project_id = "project123"
+        canvas_id = "canvas123"
         collection_name = "samples"
         data_id = "data123"
         mock_response = {"_id": data_id, "name": "Sample 1"}
         mock_client.call.return_value = mock_response
 
-        result = metadata.get_data(project_id, collection_name, data_id)
+        result = metadata.get_data(canvas_id, collection_name, data_id)
 
         mock_client.call.assert_called_once_with(
-            "GET", f"/api/v1/vmeta/project/{project_id}/data/{collection_name}/{data_id}"
+            "GET", f"/api/v1/vmeta/canvas/{canvas_id}/data/{collection_name}/{data_id}"
         )
         assert result == mock_response
 
     def test_get_data_error(self, metadata, mock_client):
         """Test error handling in get_data."""
-        project_id = "project123"
+        canvas_id = "canvas123"
         collection_name = "samples"
         data_id = "data123"
         mock_client.call.side_effect = Exception("Not found")
 
         with pytest.raises(Exception) as exc_info:
-            metadata.get_data(project_id, collection_name, data_id)
+            metadata.get_data(canvas_id, collection_name, data_id)
 
         assert f"Error 2042: Failed to get data {data_id}: Not found" in str(
             exc_info.value)
 
     def test_update_data_with_dict(self, metadata, mock_client):
         """Test updating data entry with dict data."""
-        project_id = "project123"
+        canvas_id = "canvas123"
         collection_name = "samples"
         data_id = "data123"
         update_data = {"name": "Updated Sample"}
@@ -867,16 +867,16 @@ class TestMetadata:
         mock_client.call.return_value = mock_response
 
         result = metadata.update_data(
-            project_id, collection_name, data_id, update_data)
+            canvas_id, collection_name, data_id, update_data)
 
         mock_client.call.assert_called_once_with(
-            "PATCH", f"/api/v1/vmeta/project/{project_id}/data/{collection_name}/{data_id}", data=update_data
+            "PATCH", f"/api/v1/vmeta/canvas/{canvas_id}/data/{collection_name}/{data_id}", data=update_data
         )
         assert result == mock_response
 
     def test_update_data_with_model(self, metadata, mock_client):
         """Test updating data entry with DataEntryUpdate model."""
-        project_id = "project123"
+        canvas_id = "canvas123"
         collection_name = "samples"
         data_id = "data123"
         update_data = DataEntryUpdate()
@@ -888,17 +888,17 @@ class TestMetadata:
         mock_client.call.return_value = mock_response
 
         result = metadata.update_data(
-            project_id, collection_name, data_id, update_data)
+            canvas_id, collection_name, data_id, update_data)
 
         expected_data = update_data.model_dump(exclude_none=True)
         mock_client.call.assert_called_once_with(
-            "PATCH", f"/api/v1/vmeta/project/{project_id}/data/{collection_name}/{data_id}", data=expected_data
+            "PATCH", f"/api/v1/vmeta/canvas/{canvas_id}/data/{collection_name}/{data_id}", data=expected_data
         )
         assert result == mock_response
 
     def test_update_data_error(self, metadata, mock_client):
         """Test error handling in update_data."""
-        project_id = "project123"
+        canvas_id = "canvas123"
         collection_name = "samples"
         data_id = "data123"
         update_data = {"name": "Updated Sample"}
@@ -906,164 +906,37 @@ class TestMetadata:
 
         with pytest.raises(Exception) as exc_info:
             metadata.update_data(
-                project_id, collection_name, data_id, update_data)
+                canvas_id, collection_name, data_id, update_data)
 
         assert f"Error 2043: Failed to update data {data_id}: Update failed" in str(
             exc_info.value)
 
     def test_delete_data_success(self, metadata, mock_client):
         """Test deleting data entry by ID."""
-        project_id = "project123"
+        canvas_id = "canvas123"
         collection_name = "samples"
         data_id = "data123"
         mock_response = {"message": "Data deleted"}
         mock_client.call.return_value = mock_response
 
-        result = metadata.delete_data(project_id, collection_name, data_id)
+        result = metadata.delete_data(canvas_id, collection_name, data_id)
 
         mock_client.call.assert_called_once_with(
-            "DELETE", f"/api/v1/vmeta/project/{project_id}/data/{collection_name}/{data_id}"
+            "DELETE", f"/api/v1/vmeta/canvas/{canvas_id}/data/{collection_name}/{data_id}"
         )
         assert result == mock_response
 
     def test_delete_data_error(self, metadata, mock_client):
         """Test error handling in delete_data."""
-        project_id = "project123"
+        canvas_id = "canvas123"
         collection_name = "samples"
         data_id = "data123"
         mock_client.call.side_effect = Exception("Deletion failed")
 
         with pytest.raises(Exception) as exc_info:
-            metadata.delete_data(project_id, collection_name, data_id)
+            metadata.delete_data(canvas_id, collection_name, data_id)
 
         assert f"Error 2044: Failed to delete data {data_id}: Deletion failed" in str(
             exc_info.value)
 
-    # --- Helper Methods Tests ---
-
-    def test_transfer_ownership_basic(self, metadata):
-        """Test basic ownership transfer functionality."""
-        original_obj = {
-            "_id": "obj123",
-            "name": "Test Object",
-            "owner": {"_id": "oldowner", "name": "Old Owner"},
-            "lastUpdatedUser": "olduser",
-            "perms": ["read", "write"],
-            "restrictTo": ["group1"]
-        }
-
-        new_owner = {
-            "owner": {"_id": "newowner", "name": "New Owner", "email": "new@example.com"}
-        }
-
-        result = metadata.transfer_ownership(original_obj, new_owner)
-
-        # Verify ownership transfer
-        assert result["owner"] == new_owner["owner"]
-        assert result["lastUpdatedUser"] == "newowner"
-
-        # Verify restricted fields are removed
-        assert "perms" not in result
-        assert "restrictTo" not in result
-
-        # Verify other fields are preserved
-        assert result["_id"] == "obj123"
-        assert result["name"] == "Test Object"
-
-        # Verify original object is not modified
-        assert original_obj["owner"]["_id"] == "oldowner"
-
-    def test_transfer_ownership_with_project_id(self, metadata):
-        """Test ownership transfer with project ID update."""
-        original_obj = {
-            "_id": "obj123",
-            "name": "Test Object",
-            "projectID": "oldproject",
-            "owner": {"_id": "oldowner", "name": "Old Owner"},
-            "lastUpdatedUser": "olduser"
-        }
-
-        new_owner = {
-            "owner": {"_id": "newowner", "name": "New Owner"}
-        }
-
-        result = metadata.transfer_ownership(
-            original_obj, new_owner, project_id="newproject")
-
-        # Verify project ID is updated
-        assert result["projectID"] == "newproject"
-        assert result["owner"] == new_owner["owner"]
-        assert result["lastUpdatedUser"] == "newowner"
-
-    def test_transfer_ownership_with_nested_objects(self, metadata):
-        """Test ownership transfer with nested objects."""
-        original_obj = {
-            "_id": "obj123",
-            "name": "Test Object",
-            "owner": {"_id": "oldowner", "name": "Old Owner"},
-            "children": [
-                {
-                    "owner": {"_id": "oldchildowner", "name": "Old Child Owner"},
-                    "lastUpdatedUser": "oldchilduser",
-                    "perms": ["read"]
-                }
-            ],
-            "metadata": {
-                "owner": {"_id": "oldmetaowner", "name": "Old Meta Owner"},
-                "lastUpdatedUser": "oldmetauser"
-            }
-        }
-
-        new_owner = {
-            "owner": {"_id": "newowner", "name": "New Owner"}
-        }
-
-        result = metadata.transfer_ownership(original_obj, new_owner)
-
-        # Verify nested ownership transfers
-        assert result["owner"] == new_owner["owner"]
-        assert result["children"][0]["owner"] == new_owner["owner"]
-        assert result["children"][0]["lastUpdatedUser"] == "newowner"
-        assert result["metadata"]["owner"] == new_owner["owner"]
-        assert result["metadata"]["lastUpdatedUser"] == "newowner"
-
-        # Verify nested restricted fields are removed
-        assert "perms" not in result["children"][0]
-
-    def test_transfer_ownership_preserves_non_owner_fields(self, metadata):
-        """Test that transfer_ownership preserves all non-owner/permission fields."""
-        original_obj = {
-            "_id": "obj123",
-            "name": "Test Object",
-            "description": "Test Description",
-            "tags": ["tag1", "tag2"],
-            "settings": {"key": "value"},
-            "owner": {"_id": "oldowner", "name": "Old Owner"},
-            "lastUpdatedUser": "olduser",
-            "customField": "custom value",
-            "nested": {
-                "property": "nested value",
-                "owner": {"_id": "nestedoldowner"},
-                "lastUpdatedUser": "nestedolduser"
-            }
-        }
-
-        new_owner = {
-            "owner": {"_id": "newowner", "name": "New Owner"}
-        }
-
-        result = metadata.transfer_ownership(original_obj, new_owner)
-
-        # Verify all non-owner fields are preserved
-        assert result["name"] == "Test Object"
-        assert result["description"] == "Test Description"
-        assert result["tags"] == ["tag1", "tag2"]
-        assert result["settings"] == {"key": "value"}
-        assert result["customField"] == "custom value"
-        assert result["nested"]["property"] == "nested value"
-
-        # Verify ownership fields are updated
-        assert result["owner"] == new_owner["owner"]
-        assert result["lastUpdatedUser"] == "newowner"
-        assert result["nested"]["owner"] == new_owner["owner"]
-        assert result["nested"]["lastUpdatedUser"] == "newowner"
+    

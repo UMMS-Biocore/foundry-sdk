@@ -1,8 +1,8 @@
 from copy import deepcopy
 from typing import Optional, Union
 from .models.domain.metadata import (
-    ProjectCreate,
-    ProjectUpdate,
+    CanvasCreate,
+    CanvasUpdate,
     CollectionCreate,
     CollectionUpdate,
     FieldCreate,
@@ -30,22 +30,22 @@ class Metadata:
         """
         self.client = client
 
-    # --- Project Methods ---
-    def search_projects(self, search_params: Optional[Union[dict, SearchParams]] = None) -> dict:
+    # --- Canvas Methods ---
+    def search_canvas(self, search_params: Optional[Union[dict, SearchParams]] = None) -> dict:
         """
-        Searches for projects using the metadata API.
+        Searches for the canvas using the metadata API.
 
         Args:
-            search_params (dict or SearchParams, optional): Search parameters for the project search. Defaults to None.
+            search_params (dict or SearchParams, optional): Search parameters for the canvas search. Defaults to None.
 
         Returns:
-            dict: The search results for projects.
+            dict: The search results for the canvas.
 
         Raises:
             Exception: If the search fails.
         """
         try:
-            endpoint = "/api/v1/vmeta/project/search"
+            endpoint = "/api/v1/vmeta/canvas/search"
             if isinstance(search_params, SearchParams):
                 data = search_params.model_dump(exclude_none=True)
             else:
@@ -53,80 +53,80 @@ class Metadata:
             return self.client.call("POST", endpoint, data=data)
         except Exception as e:
             raise Exception(
-                f"Error 2001: Failed to search projects: {e}") from e
+                f"Error 2001: Failed to search canvas: {e}") from e
 
-    def create_project(self, project_data: Union[dict, ProjectCreate]) -> dict:
+    def create_canvas(self, canvas_data: Union[dict, CanvasCreate]) -> dict:
         """
-        Creates a new metadata project.
+        Creates a new metadata canvas.
 
         Args:
-            project_data (dict or ProjectCreate): Data required to create the project.
+            canvas_data (dict or CanvasCreate): Data required to create the canvas.
 
         Returns:
-            dict: The created project.
+            dict: The created canvas.
 
         Raises:
             Exception: If the creation fails.
         """
         try:
-            if isinstance(project_data, ProjectCreate):
-                data = project_data.model_dump(exclude_none=True)
+            if isinstance(canvas_data, CanvasCreate):
+                data = canvas_data.model_dump(exclude_none=True)
             else:
-                data = project_data
-            return self.client.call("POST", "/api/v1/vmeta/project/create", data=data)
+                data = canvas_data
+            return self.client.call("POST", "/api/v1/vmeta/canvas/create", data=data)
         except Exception as e:
             raise Exception(
-                f"Error 2002: Failed to create project: {e}") from e
+                f"Error 2002: Failed to create canvas: {e}") from e
 
-    def get_project(self, project_id: str) -> dict:
+    def get_canvas(self, canvas_id: str) -> dict:
         """
-        Retrieves a project by its ID.
+        Retrieves a canvas by its ID.
 
         Args:
-            project_id (str): The ID of the project.
+            canvas_id (str): The ID of the canvas.
 
         Returns:
-            dict: The project details.
+            dict: The canvas details.
 
         Raises:
             Exception: If retrieval fails.
         """
         try:
-            return self.client.call("GET", f"/api/v1/vmeta/project/{project_id}")
+            return self.client.call("GET", f"/api/v1/vmeta/canvas/{canvas_id}")
         except Exception as e:
             raise Exception(
-                f"Error 2003: Failed to get project {project_id}: {e}") from e
+                f"Error 2003: Failed to get canvas {canvas_id}: {e}") from e
 
-    def update_project(self, project_id: str, update_data: Union[dict, ProjectUpdate]) -> dict:
+    def update_canvas(self, canvas_id: str, update_data: Union[dict, CanvasUpdate]) -> dict:
         """
-        Updates an existing project.
+        Updates an existing canvas.
 
         Args:
-            project_id (str): The ID of the project to update.
-            update_data (dict or ProjectUpdate): The data to update in the project.
+            canvas_id (str): The ID of the canvas to update.
+            update_data (dict or CanvasUpdate): The data to update in the canvas.
 
         Returns:
-            dict: The updated project.
+            dict: The updated canvas.
 
         Raises:
             Exception: If update fails.
         """
         try:
-            if isinstance(update_data, ProjectUpdate):
+            if isinstance(update_data, CanvasUpdate):
                 data = update_data.model_dump(exclude_none=True)
             else:
                 data = update_data
-            return self.client.call("PATCH", f"/api/v1/vmeta/project/{project_id}", data=data)
+            return self.client.call("PATCH", f"/api/v1/vmeta/canvas/{canvas_id}", data=data)
         except Exception as e:
             raise Exception(
-                f"Error 2004: Failed to update project {project_id}: {e}") from e
+                f"Error 2004: Failed to update canvas {canvas_id}: {e}") from e
 
-    def delete_project(self, project_id: str) -> dict:
+    def delete_canvas(self, canvas_id: str) -> dict:
         """
-        Deletes a project by its ID.
+        Deletes a canvas by its ID.
 
         Args:
-            project_id (str): The ID of the project to delete.
+            canvas_id (str): The ID of the canvas to delete.
 
         Returns:
             dict: The deletion result.
@@ -135,10 +135,10 @@ class Metadata:
             Exception: If deletion fails.
         """
         try:
-            return self.client.call("DELETE", f"/api/v1/vmeta/project/{project_id}")
+            return self.client.call("DELETE", f"/api/v1/vmeta/canvas/{canvas_id}")
         except Exception as e:
             raise Exception(
-                f"Error 2005: Failed to delete project {project_id}: {e}") from e
+                f"Error 2005: Failed to delete canvas {canvas_id}: {e}") from e
 
     # --- Collection Methods ---
     def search_collections(self, search_params: Optional[Union[dict, SearchParams]] = None) -> dict:
@@ -380,15 +380,15 @@ class Metadata:
             raise Exception(
                 f"Error 2026: Failed to get fields for collection: {collection_id}: {e}") from e
 
-    def get_project_fields(self, project_id: str) -> dict:
+    def get_canvas_fields(self, canvas_id: str) -> dict:
         """
-        Retrieves all metadata fields for a given project by accumulating fields from all its collections.
+        Retrieves all metadata fields for a given canvas by accumulating fields from all its collections.
 
         Args:
-            project_id (str): projectID of the field.
+            canvas_id (str): canvasID of the field.
 
         Returns:
-            dict: All fields for the project, accumulated in a single dictionary with a "data" key containing a list.
+            dict: All fields for the canvas, accumulated in a single dictionary with a "data" key containing a list.
 
         Raises:
             Exception: If retrieval fails.
@@ -396,7 +396,7 @@ class Metadata:
         try:
             search_params = {
                 "filter": {
-                    "projectID": project_id
+                    "canvasID": canvas_id
                 }
             }
             collections = self.search_collections(search_params)
@@ -411,7 +411,7 @@ class Metadata:
             return {"data": all_fields}
         except Exception as e:
             raise Exception(
-                f"Error 2027: Failed to get fields for project {project_id}: {e}") from e
+                f"Error 2027: Failed to get fields for canvas {canvas_id}: {e}") from e
 
     # --- Dataset Methods ---
 
@@ -464,12 +464,12 @@ class Metadata:
                 f"Error 2037: Failed to add files to dataset {dataset_id}: {e}") from e
 
     # --- Data Methods ---
-    def search_data(self, project_id: str, collection_name: str, filter_data: Optional[Union[dict, SearchParams]] = None) -> dict:
+    def search_data(self, canvas_id: str, collection_name: str, filter_data: Optional[Union[dict, SearchParams]] = None) -> dict:
         """
         Searches data entries in a collection.
 
         Args:
-            project_id (str): Project ID.
+            canvas_id (str): Canvas ID.
             collection_name (str): Collection name.
             filter_data (dict, optional): Filter criteria.
 
@@ -484,17 +484,17 @@ class Metadata:
                 data = filter_data.model_dump(exclude_none=True)
             else:
                 data = filter_data or {}
-            return self.client.call("POST", f"/api/v1/vmeta/project/{project_id}/data/{collection_name}/search", data=data)
+            return self.client.call("POST", f"/api/v1/vmeta/canvas/{canvas_id}/data/{collection_name}/search", data=data)
         except Exception as e:
             raise Exception(
                 f"Error 2041: Failed to search data for {collection_name}: {e}") from e
 
-    def get_data(self, project_id: str, collection_name: str, data_id: str) -> dict:
+    def get_data(self, canvas_id: str, collection_name: str, data_id: str) -> dict:
         """
         Retrieves a data entry by ID.
 
         Args:
-            project_id (str): Project ID.
+            canvas_id (str): Canvas ID.
             collection_name (str): Collection name.
             data_id (str): Data entry ID.
 
@@ -505,17 +505,17 @@ class Metadata:
             Exception: If retrieval fails.
         """
         try:
-            return self.client.call("GET", f"/api/v1/vmeta/project/{project_id}/data/{collection_name}/{data_id}")
+            return self.client.call("GET", f"/api/v1/vmeta/canvas/{canvas_id}/data/{collection_name}/{data_id}")
         except Exception as e:
             raise Exception(
                 f"Error 2042: Failed to get data {data_id}: {e}") from e
 
-    def update_data(self, project_id: str, collection_name: str, data_id: str, update_data: Union[dict, DataEntryUpdate]) -> dict:
+    def update_data(self, canvas_id: str, collection_name: str, data_id: str, update_data: Union[dict, DataEntryUpdate]) -> dict:
         """
         Updates a data entry.
 
         Args:
-            project_id (str): Project ID.
+            canvas_id (str): Canvas ID.
             collection_name (str): Collection name.
             data_id (str): Data entry ID.
             update_data (dict or DataEntryUpdate): Update payload.
@@ -531,17 +531,17 @@ class Metadata:
                 data = update_data.model_dump(exclude_none=True)
             else:
                 data = update_data
-            return self.client.call("PATCH", f"/api/v1/vmeta/project/{project_id}/data/{collection_name}/{data_id}", data=data)
+            return self.client.call("PATCH", f"/api/v1/vmeta/canvas/{canvas_id}/data/{collection_name}/{data_id}", data=data)
         except Exception as e:
             raise Exception(
                 f"Error 2043: Failed to update data {data_id}: {e}") from e
 
-    def delete_data(self, project_id: str, collection_name: str, data_id: str) -> dict:
+    def delete_data(self, canvas_id: str, collection_name: str, data_id: str) -> dict:
         """
         Deletes a data entry.
 
         Args:
-            project_id (str): Project ID.
+            canvas_id (str): Canvas ID.
             collection_name (str): Collection name.
             data_id (str): Data entry ID.
 
@@ -552,47 +552,10 @@ class Metadata:
             Exception: If deletion fails.
         """
         try:
-            return self.client.call("DELETE", f"/api/v1/vmeta/project/{project_id}/data/{collection_name}/{data_id}")
+            return self.client.call("DELETE", f"/api/v1/vmeta/canvas/{canvas_id}/data/{collection_name}/{data_id}")
         except Exception as e:
             raise Exception(
                 f"Error 2044: Failed to delete data {data_id}: {e}") from e
 
-    # --- Helper Methods ---
 
-    def transfer_ownership(self, obj: dict, new_owner: dict, project_id: str = None) -> dict:
-        """
-        Transfers ownership and sets lastUpdatedUser for a collection or field object.
 
-        Args:
-            obj (dict): The original dictionary (collection or field).
-            new_owner (dict): A dict with the 'owner' key holding the new owner structure.
-
-        Returns:
-            dict: A modified copy of the original object with updated ownership and cleaned metadata.
-        """
-        new_obj = deepcopy(obj)
-        owner_data = new_owner['owner']
-        owner_id = owner_data['_id']
-
-        def recursive_cleanup(data):
-            if isinstance(data, dict):
-                keys_to_delete = []
-                for key, value in data.items():
-                    if key == 'owner' and isinstance(value, dict):
-                        data[key] = deepcopy(owner_data)
-                    elif key == 'lastUpdatedUser':
-                        data[key] = owner_id
-                    elif key == 'projectID':
-                        if project_id is not None:
-                            data[key] = project_id
-                    elif key in ['perms', 'restrictTo']:
-                        keys_to_delete.append(key)
-                    else:
-                        recursive_cleanup(value)
-                for key in keys_to_delete:
-                    del data[key]
-            elif isinstance(data, list):
-                for item in data:
-                    recursive_cleanup(item)
-            return data
-        return recursive_cleanup(new_obj)

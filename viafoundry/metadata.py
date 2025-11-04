@@ -489,6 +489,7 @@ class Metadata:
             raise Exception(
                 f"Error 2041: Failed to search data for {collection_name}: {e}") from e
 
+
     def get_data(self, canvas_id: str, collection_name: str, data_id: str) -> dict:
         """
         Retrieves a data entry by ID.
@@ -556,6 +557,31 @@ class Metadata:
         except Exception as e:
             raise Exception(
                 f"Error 2044: Failed to delete data {data_id}: {e}") from e
+
+    def create_data(self, canvas_id: str, collection_name: str, data_entry: Union[dict, DataEntryUpdate]) -> dict:
+        """
+        Creates a new data entry in a collection.
+
+        Args:
+            canvas_id (str): Canvas ID.
+            collection_name (str): Collection name.
+            data_entry (dict or DataEntryUpdate): Data to insert.
+
+        Returns:
+            dict: The created data entry.
+
+        Raises:
+            Exception: If creation fails.
+        """
+        try:
+            if isinstance(data_entry, DataEntryUpdate):
+                data = data_entry.model_dump(exclude_none=True)
+            else:
+                data = data_entry
+            return self.client.call("POST", f"/api/v1/vmeta/canvas/{canvas_id}/data/{collection_name}/create", data=data)
+        except Exception as e:
+            raise Exception(
+                f"Error 2045: Failed to create data in {collection_name}: {e}") from e
 
 
 

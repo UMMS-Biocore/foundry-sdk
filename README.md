@@ -546,9 +546,8 @@ client = ViaFoundryClient()
 #### Using Token (Recommended)
 Configure with a personal access token:
 ```python
-from viafoundry.auth import Auth
-auth = Auth()
-auth.configure_token(
+client = ViaFoundryClient()
+client.configure_auth_token(
     hostname="https://your-api-host.com",
     token="your-personal-access-token"
 )
@@ -557,6 +556,7 @@ auth.configure_token(
 #### Using Username/Password
 Alternatively, configure with username and password:
 ```python
+client = ViaFoundryClient()
 client.configure_auth(
     hostname="https://your-api-host.com",
     username="your-username",

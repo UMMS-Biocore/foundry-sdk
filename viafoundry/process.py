@@ -1,3 +1,4 @@
+from typing import Union, Optional, List
 from viafoundry.models.domain.process import ConfigParameter, Parameter, ProcessConfig, ProcessSummaryResponse, ProcessResponse, ServerParameterResponse
 from pydantic import TypeAdapter
 
@@ -29,7 +30,7 @@ class Process:
         adapter = TypeAdapter(model_type)
         return adapter.validate_python(data)
 
-    def list_processes(self) -> list[ProcessSummaryResponse]:
+    def list_processes(self) -> List[ProcessSummaryResponse]:
         """
         Lists all existing processes.
 
@@ -45,11 +46,11 @@ class Process:
         try:
             endpoint = "/api/v1/process/"
             response = self.client.call("GET", endpoint)
-            return self._validate_with_type_adapter(list[ProcessSummaryResponse], response.get("data", []))
+            return self._validate_with_type_adapter(List[ProcessSummaryResponse], response.get("data", []))
         except Exception as e:
             raise Exception("Error 1001: Failed to list processes") from e
 
-    def get_process(self, process_id: str | int) -> ProcessResponse:
+    def get_process(self, process_id: Union[str, int]) -> ProcessResponse:
         """
         Retrieves information about a specific process.
 
@@ -71,7 +72,7 @@ class Process:
                 f"Error 1002: Failed to retrieve process with ID {process_id}"
             ) from e
 
-    def get_process_revisions(self, process_id: str | int) -> list[ProcessResponse]:
+    def get_process_revisions(self, process_id: Union[str, int]) -> List[ProcessResponse]:
         """
         Gets all revisions for the given process.
 
@@ -87,13 +88,13 @@ class Process:
         try:
             endpoint = f"/api/v1/process/{process_id}/revisions"
             response = self.client.call("GET", endpoint)
-            return self._validate_with_type_adapter(list[ProcessResponse], response.get("revisions", []))
+            return self._validate_with_type_adapter(List[ProcessResponse], response.get("revisions", []))
         except Exception as e:
             raise Exception(
                 f"Error 1003: Failed to get revisions for process ID {process_id}"
             ) from e
 
-    def duplicate_process(self, process_id: str | int) -> ProcessResponse:
+    def duplicate_process(self, process_id: Union[str, int]) -> ProcessResponse:
         """
         Duplicates a process.
 
@@ -153,7 +154,7 @@ class Process:
         except Exception as e:
             raise Exception("Error 1007: Failed to list menu groups") from e
 
-    def update_menu_group(self, menu_group_id: str | int, name: str) -> dict:
+    def update_menu_group(self, menu_group_id: Union[str, int], name: str) -> dict:
         """
         Updates a menu group.
 
@@ -201,7 +202,7 @@ class Process:
             raise Exception(
                 "Error 1009: Failed to create a new process") from e
 
-    def update_process(self, process_id: str | int, process_data: ProcessConfig) -> ProcessResponse:
+    def update_process(self, process_id: Union[str, int], process_data: ProcessConfig) -> ProcessResponse:
         """
         Updates an existing process.
 
@@ -228,7 +229,7 @@ class Process:
                 f"Error 1010: Failed to update process with ID {process_id}"
             ) from e
 
-    def delete_process(self, process_id: str | int) -> None:
+    def delete_process(self, process_id: Union[str, int]) -> None:
         """
         Deletes a process.
 
@@ -246,7 +247,7 @@ class Process:
                 f"Error 1011: Failed to delete process with ID {process_id}"
             ) from e
 
-    def list_parameters(self) -> list[ServerParameterResponse]:
+    def list_parameters(self) -> List[ServerParameterResponse]:
         """
         Lists all parameters.
 
@@ -259,11 +260,11 @@ class Process:
         try:
             endpoint = f"/api/parameter/v1"
             response = self.client.call("GET", endpoint)
-            return self._validate_with_type_adapter(list[ServerParameterResponse], response)
+            return self._validate_with_type_adapter(List[ServerParameterResponse], response)
         except Exception as e:
             raise Exception("Error 1013: Failed to list parameters") from e
 
-    def create_parameter(self, parameter_data: Parameter | dict) -> ServerParameterResponse:
+    def create_parameter(self, parameter_data: Union[Parameter, dict]) -> ServerParameterResponse:
         """
         Creates a new parameter.
 
@@ -290,7 +291,7 @@ class Process:
             raise Exception(
                 "Error 1014: Failed to create a new parameter") from e
 
-    def update_parameter(self, parameter_id: str | int, parameter_data: Parameter | dict) -> ServerParameterResponse:
+    def update_parameter(self, parameter_id: Union[str, int], parameter_data: Union[Parameter, dict]) -> ServerParameterResponse:
         """
         Updates an existing parameter.
 
@@ -319,7 +320,7 @@ class Process:
                 f"Error 1015: Failed to update parameter with ID {parameter_id}"
             ) from e
 
-    def delete_parameter(self, parameter_id: str | int) -> None:
+    def delete_parameter(self, parameter_id: Union[str, int]) -> None:
         """
         Deletes an existing parameter.
 
@@ -337,7 +338,7 @@ class Process:
                 f"Error 1016: Failed to delete parameter with ID {parameter_id}"
             ) from e
 
-    def get_menu_group_by_name(self, group_name: str) -> str | None:
+    def get_menu_group_by_name(self, group_name: str) -> Optional[str]:
         """
         Finds a menu group by its name.
 
@@ -366,7 +367,7 @@ class Process:
         qualifier: str = None,
         fileType: str = None,
         id_: str = None
-    ) -> list[ServerParameterResponse]:
+    ) -> List[ServerParameterResponse]:
         """
         Filters parameters by optional name, qualifier, fileType, and id.
         All filters are case-insensitive and optional.

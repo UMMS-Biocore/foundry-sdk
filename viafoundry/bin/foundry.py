@@ -37,28 +37,66 @@ def cli(ctx: click.Context, version: bool, config: str) -> None:
         raise click.Abort()
 
 @cli.command()
-@click.option('--hostname', prompt="API Hostname", help="API Hostname, e.g., https://viafoundry.com")
-@click.option('--username', prompt="Username", help="Login username")
-@click.option('--password', prompt="Password", hide_input=True, help="Login password")
+@click.option('--hostname', default=None, help="API Hostname, e.g., https://viafoundry.com")
+@click.option('--username', default=None, help="Login username")
+@click.option('--password', default=None, help="Login password")
+@click.option('--token', default=None, help="Personal access token (alternative to username/password)")
 @click.option('--identity-type', default=1, type=int, help="Identity type (default: 1)")
 @click.option('--redirect-uri', default="https://viafoundry.com/user", help="Redirect URI (default: https://viafoundry.com/user)")
 @click.pass_context
-def configure(ctx: click.Context, hostname: str, username: str, password: str, 
+def configure(ctx: click.Context, hostname: str = None, username: str = None, password: str = None, token: str = None,
            identity_type: int = 1, redirect_uri: str = "https://viafoundry.com/user") -> None:
     """Configure the SDK with authentication details.
+    
+    You can authenticate using either:
+    1. Personal access token (recommended)
+    2. Username and password
+    
+    Examples:
+        foundry configure --hostname https://viafoundry.com --token <your_token>
+        foundry configure --hostname https://viafoundry.com --username user --password pass
 
     Args:
         ctx (click.Context): Click context object.
         hostname (str): API hostname URL.
-        username (str): Login username.
-        password (str): Login password.
+        username (str, optional): Login username.
+        password (str, optional): Login password.
+        token (str, optional): Personal access token.
         identity_type (int, optional): Identity type. Defaults to 1.
         redirect_uri (str, optional): Redirect URI. Defaults to "https://viafoundry.com/user".
     """
     auth = ctx.obj['auth']
     try:
-        auth.configure(hostname, username, password, identity_type, redirect_uri)
-        click.echo("Configuration saved successfully.")
+        # Prompt for hostname if not provided
+        if not hostname:
+            hostname = click.prompt("API Hostname", type=str)
+        
+        # If token is provided via CLI, use token auth
+        if token:
+            auth.configure_token(hostname, token)
+            click.echo("Configuration saved successfully using token.")
+        # If username is provided via CLI, use username/password auth
+        elif username:
+            if not password:
+                password = click.prompt("Password", hide_input=True, type=str)
+            auth.configure(hostname, username, password, identity_type=identity_type, redirect_uri=redirect_uri)
+            click.echo("Configuration saved successfully.")
+        # Interactive mode: ask user to choose
+        else:
+            click.echo("\nChoose authentication method:")
+            click.echo("  1. Token (recommended)")
+            click.echo("  2. Username and Password")
+            auth_choice = click.prompt("Enter choice", type=click.Choice(['1', '2']), show_choices=False)
+            
+            if auth_choice == '1':
+                token = click.prompt("Personal Access Token", type=str)
+                auth.configure_token(hostname, token)
+                click.echo("Configuration saved successfully using token.")
+            else:
+                username = click.prompt("Username", type=str)
+                password = click.prompt("Password", hide_input=True, type=str)
+                auth.configure(hostname, username, password, identity_type=identity_type, redirect_uri=redirect_uri)
+                click.echo("Configuration saved successfully.")
     except Exception as e:
         logging.error("Failed to configure authentication", exc_info=True)
         click.echo(f"Error: {e}", err=True)

@@ -49,26 +49,56 @@ class ViaFoundryClient:
             self._raise_error(101, "Failed to initialize authentication. Check your configuration file.")
         self.endpoints_cache = None  # Cache for discovered endpoints
 
-    def configure_auth(self, hostname: str, username: str, password: str, identity_type: str = "1", redirect_uri: str = "http://localhost/user") -> None:
+    def configure_auth(self, hostname: str, username: str = None, password: str = None, token: str = None, identity_type: str = "1", redirect_uri: str = "http://localhost/user") -> None:
         """
         Configures authentication by setting up the token.
 
         Args:
             hostname (str): The hostname for authentication.
-            username (str): The username for authentication.
-            password (str): The password for authentication.
+            username (str, optional): The username for authentication.
+            password (str, optional): The password for authentication.
+            token (str, optional): Pre-generated personal access token.
             identity_type (str): The identity type. Defaults to "1".
             redirect_uri (str): The redirect URI. Defaults to "http://localhost/user".
 
         Raises:
             RuntimeError: If authentication configuration fails.
+        
+        Examples:
+            Using username and password:
+                client.configure_auth(hostname="https://api.example.com", username="user", password="pass")
+            
+            Using personal access token:
+                client.configure_auth(hostname="https://api.example.com", token="your_pat_token")
         """
         try:
-            self.auth.configure(hostname, username, password, identity_type, redirect_uri)
+            self.auth.configure(hostname, username, password, token, identity_type, redirect_uri)
         except MissingSchema:
             self._raise_error(104, f"Invalid hostname '{hostname}'. No scheme supplied. Did you mean 'https://{hostname}'?")
         except RequestException:
             self._raise_error(102, "Failed to configure authentication. Check your hostname and credentials.")
+        except Exception:
+            self._raise_error(999, "An unexpected error occurred while configuring authentication.")
+    
+    def configure_auth_token(self, hostname: str, token: str) -> None:
+        """
+        Configures authentication using a pre-generated personal access token.
+        This is a convenience method for token-only authentication.
+
+        Args:
+            hostname (str): The hostname for authentication.
+            token (str): Pre-generated personal access token.
+
+        Raises:
+            RuntimeError: If authentication configuration fails.
+        
+        Examples:
+            client.configure_auth_token(hostname="https://api.example.com", token="your_pat_token")
+        """
+        try:
+            self.auth.configure_token(hostname, token)
+        except MissingSchema:
+            self._raise_error(104, f"Invalid hostname '{hostname}'. No scheme supplied. Did you mean 'https://{hostname}'?")
         except Exception:
             self._raise_error(999, "An unexpected error occurred while configuring authentication.")
 

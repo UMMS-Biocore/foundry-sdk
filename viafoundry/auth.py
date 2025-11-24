@@ -49,11 +49,19 @@ class Auth:
             token (str, optional): Pre-generated personal access token. Defaults to None.
             identity_type (int, optional): The identity type. Defaults to 1.
             redirect_uri (str, optional): The redirect URI. Defaults to "https://viafoundry.com/user".
+        
+        Raises:
+            ValueError: If hostname or token is empty.
         """
+        if not hostname or not hostname.strip():
+            raise ValueError("Hostname cannot be empty")
+        
         self.hostname = hostname
         
         # If token is provided, use it directly
         if token:
+            if not token.strip():
+                raise ValueError("Token cannot be empty")
             self.bearer_token = token
             self.save_config()
             return
@@ -62,6 +70,12 @@ class Auth:
         if not username or not password:
             username = input("Username: ")
             password = input("Password: ")
+        
+        # Validate username and password
+        if not username or not username.strip():
+            raise ValueError("Username cannot be empty")
+        if not password or not password.strip():
+            raise ValueError("Password cannot be empty")
 
         # Authenticate and retrieve the cookie token
         cookie_token = self.login(username, password, identity_type, redirect_uri)
@@ -75,7 +89,15 @@ class Auth:
         Args:
             hostname (str): The hostname for authentication.
             token (str): Pre-generated personal access token.
+        
+        Raises:
+            ValueError: If hostname or token is empty.
         """
+        if not hostname or not hostname.strip():
+            raise ValueError("Hostname cannot be empty")
+        if not token or not token.strip():
+            raise ValueError("Token cannot be empty")
+        
         self.hostname = hostname
         self.bearer_token = token
         self.save_config()

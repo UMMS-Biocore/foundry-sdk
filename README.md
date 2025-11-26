@@ -1019,7 +1019,35 @@ poetry version major
 poetry build
 ```
 
+3. Set up PyPI credentials
 
+Option A: Configure manually
+You can set your PyPI token securely: 
+
+```
+poetry config pypi-token.pypi <your-token>
+```
+
+Option B: Use environment variable
+Set POETRY_PYPI_TOKEN_PYPI in your shell or CI environment:
+
+```
+export POETRY_PYPI_TOKEN_PYPI=<your-token>
+```
+In GitHub Actions, define this as a secret and reference it like:
+
+```
+env:
+  POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_TOKEN }}
+```
+
+4. Publish the package
+
+Once your token is set, run:
+
+```
+poetry publish --build
+```
 
 ---
 

@@ -39,25 +39,67 @@ class Auth:
         with open(self.config_path, "w") as f:
             json.dump(config, f, indent=4)
 
-    def configure(self, hostname: str, username: Optional[str] = None, password: Optional[str] = None, identity_type: int = 1, redirect_uri: str = "https://viafoundry.com/user") -> None:
+    def configure(self, hostname: str, username: Optional[str] = None, password: Optional[str] = None, token: Optional[str] = None, identity_type: int = 1, redirect_uri: str = "https://viafoundry.com/user") -> None:
         """Prompt user for credentials if necessary and authenticate.
 
         Args:
             hostname (str): The hostname for authentication.
             username (str, optional): The username for authentication. Defaults to None.
             password (str, optional): The password for authentication. Defaults to None.
+            token (str, optional): Pre-generated personal access token. Defaults to None.
             identity_type (int, optional): The identity type. Defaults to 1.
             redirect_uri (str, optional): The redirect URI. Defaults to "https://viafoundry.com/user".
+        
+        Raises:
+            ValueError: If hostname or token is empty.
         """
+        if not hostname or not hostname.strip():
+            raise ValueError("Hostname cannot be empty")
+        
         self.hostname = hostname
+        
+        # If token is provided, use it directly
+        if token:
+            if not token.strip():
+                raise ValueError("Token cannot be empty")
+            self.bearer_token = token
+            self.save_config()
+            return
+        
+        # Otherwise, use username/password authentication
         if not username or not password:
             username = input("Username: ")
             password = input("Password: ")
+        
+        # Validate username and password
+        if not username or not username.strip():
+            raise ValueError("Username cannot be empty")
+        if not password or not password.strip():
+            raise ValueError("Password cannot be empty")
 
         # Authenticate and retrieve the cookie token
         cookie_token = self.login(username, password, identity_type, redirect_uri)
         # Use cookie token to get bearer token
         self.bearer_token = self.get_bearer_token(cookie_token)
+        self.save_config()
+    
+    def configure_token(self, hostname: str, token: str) -> None:
+        """Configure authentication using a pre-generated personal access token.
+
+        Args:
+            hostname (str): The hostname for authentication.
+            token (str): Pre-generated personal access token.
+        
+        Raises:
+            ValueError: If hostname or token is empty.
+        """
+        if not hostname or not hostname.strip():
+            raise ValueError("Hostname cannot be empty")
+        if not token or not token.strip():
+            raise ValueError("Token cannot be empty")
+        
+        self.hostname = hostname
+        self.bearer_token = token
         self.save_config()
 
     def login(self, username: str, password: str, identity_type: int = 1, redirect_uri: str = "https://viafoundry.com/user") -> str:

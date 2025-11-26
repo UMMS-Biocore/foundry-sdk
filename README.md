@@ -109,21 +109,33 @@ The **ViaFoundry SDK and CLI** provide a powerful way to interact with ViaFoundr
 The CLI provides quick access to ViaFoundry functionalities without needing to write code. Below are some common commands.
 
 ### **1. Configure the CLI or SDK**
-Authenticate with your ViaFoundry account:
+
+#### Interactive Mode
+Authenticate with your ViaFoundry account interactively:
 ```bash
 foundry configure
 ```
+This will prompt you to:
+1. Enter API hostname
+2. Choose authentication method:
+   - **Token** (recommended)
+   - **Username and Password**
 
-or
+#### Quick Setup with Token (Recommended)
+```bash
+foundry configure --hostname https://your-api-host.com --token your-token
+```
 
+#### Setup with Username/Password
 ```bash
 foundry configure --hostname https://your-api-host.com --username your-username --password your-password
 ```
 
 Options:
-- `--hostname`: The URL of the ViaFoundry API.
-- `--username`: Your username.
-- `--password`: Your password.
+- `--hostname`: The URL of the ViaFoundry API (e.g., `https://viafoundry.com` or `http://localhost:8081`)
+- `--token`: Personal access token (recommended for security)
+- `--username`: Your username (used with password authentication)
+- `--password`: Your password (used with username authentication)
 
 ---
 
@@ -530,8 +542,21 @@ client = ViaFoundryClient()
 ---
 
 ### **3. Authenticate and Configure**
-Alternatively, configure the client programmatically:
+
+#### Using Token (Recommended)
+Configure with a personal access token:
 ```python
+client = ViaFoundryClient()
+client.configure_auth_token(
+    hostname="https://your-api-host.com",
+    token="your-personal-access-token"
+)
+```
+
+#### Using Username/Password
+Alternatively, configure with username and password:
+```python
+client = ViaFoundryClient()
 client.configure_auth(
     hostname="https://your-api-host.com",
     username="your-username",

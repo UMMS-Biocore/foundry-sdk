@@ -80,6 +80,7 @@ The **ViaFoundry SDK and CLI** provide a powerful way to interact with ViaFoundr
     - [Create a Parameter](#create-a-parameter-sdk)
     - [Update a Parameter](#update-a-parameter-sdk)
     - [Delete a Parameter](#delete-a-parameter-sdk)
+  - [Release a version](#release-a-version)
   - [Summary](#summary)
 
 ---
@@ -989,6 +990,37 @@ print(response)
 response = process.delete_parameter(parameter_id="123")
 print(response)
 ```
+
+---
+### Release a version
+
+1. First get a new version
+
+For patch release
+
+```
+poetry version patch
+```
+
+For minor release
+```
+poetry version minor
+```
+
+For major release
+
+```
+poetry version major
+```
+
+2. Build it
+
+```
+poetry build
+```
+
+
+
 ---
 
 ## Summary

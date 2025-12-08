@@ -188,7 +188,7 @@ def test_get_menu_group_by_name_not_found(process, mock_client):
     assert result is None
 
 
-def test_filter_parameters_filters(process, mock_client):
+def test_get_parameters_filters(process, mock_client):
     class DummyParam:
         def __init__(self, id, name, qualifier, fileType):
             self.id = id
@@ -198,16 +198,16 @@ def test_filter_parameters_filters(process, mock_client):
     mock_client.call.return_value = [DummyParam(
         1, "foo", "q", "txt"), DummyParam(2, "bar", "q2", "csv")]
     process.list_parameters = lambda: mock_client.call.return_value
-    filtered = process.filter_parameters(name="foo")
+    filtered = process.get_parameters(name="foo")
     assert len(filtered) == 1
     assert filtered[0].name == "foo"
-    filtered = process.filter_parameters(qualifier="q2")
+    filtered = process.get_parameters(qualifier="q2")
     assert len(filtered) == 1
     assert filtered[0].name == "bar"
-    filtered = process.filter_parameters(fileType="csv")
+    filtered = process.get_parameters(fileType="csv")
     assert len(filtered) == 1
     assert filtered[0].name == "bar"
-    filtered = process.filter_parameters(id_="1")
+    filtered = process.get_parameters(id_="1")
     assert len(filtered) == 1
     assert filtered[0].name == "foo"
 
@@ -215,7 +215,7 @@ def test_filter_parameters_filters(process, mock_client):
 def test_create_process_config_creates_menu_group_if_missing(process, mock_client):
     process.get_menu_group_by_name = lambda name: None
     process.create_menu_group = lambda name: {"id": 42}
-    process.filter_parameters = lambda **kwargs: [
+    process.get_parameters = lambda **kwargs: [
         type("P", (), {"id": 1, "name": "foo", "qualifier": None, "fileType": None})()]
     input_params = [{"name": "foo", "qualifier": None, "fileType": None, "displayName": "foo",
                      "operator": "", "operatorContent": "", "optional": False, "test": ""}]
@@ -234,7 +234,7 @@ def test_create_process_config_creates_menu_group_if_missing(process, mock_clien
 def test_create_process_config_with_existing_menu_group(process, mock_client):
     process.get_menu_group_by_name = lambda name: 99
     process.create_menu_group = lambda name: {"id": 99}
-    process.filter_parameters = lambda **kwargs: [
+    process.get_parameters = lambda **kwargs: [
         type("P", (), {"id": 2, "name": "bar", "qualifier": None, "fileType": None})()]
     input_params = [{"name": "bar", "qualifier": None, "fileType": None, "displayName": "bar",
                      "operator": "", "operatorContent": "", "optional": True, "test": "t"}]
@@ -269,11 +269,11 @@ def test_create_process_config_with_new_parameter(process, mock_client):
     """
     Test creating a process config where the parameter does not exist and must be created.
     """
-    # Simulate filter_parameters returns empty, so create_parameter is called
+    # Simulate get_parameters returns empty, so create_parameter is called
     created_param = type(
         "P", (), {"id": 123, "name": "newparam", "qualifier": "val", "fileType": None})()
     # First call returns [], second call returns [created_param]
-    process.filter_parameters = MagicMock(
+    process.get_parameters = MagicMock(
         side_effect=[[], [created_param], [], [created_param]])
     process.create_menu_group = lambda name: {"id": 55}
     process.get_menu_group_by_name = lambda name: 55
@@ -326,7 +326,7 @@ def test_create_process_config_menu_group_created_if_missing(process, mock_clien
     """
     process.get_menu_group_by_name = MagicMock(return_value=None)
     process.create_menu_group = MagicMock(return_value={"id": 77})
-    process.filter_parameters = MagicMock(return_value=[
+    process.get_parameters = MagicMock(return_value=[
         type("P", (), {"id": 5, "name": "foo",
              "qualifier": None, "fileType": None})()
     ])
@@ -360,9 +360,9 @@ def test_create_process_config_menu_group_created_if_missing(process, mock_clien
     process.create_menu_group.assert_called_once_with("group4")
 
 
-def test_filter_parameters_multiple_filters(process, mock_client):
+def test_get_parameters_multiple_filters(process, mock_client):
     """
-    Test filter_parameters with multiple filters applied.
+    Test get_parameters with multiple filters applied.
     """
     class DummyParam:
         def __init__(self, id, name, qualifier, fileType):
@@ -376,7 +376,7 @@ def test_filter_parameters_multiple_filters(process, mock_client):
         DummyParam(3, "baz", "q", "csv"),
     ]
     process.list_parameters = lambda: params
-    filtered = process.filter_parameters(
+    filtered = process.get_parameters(
         name="ba", qualifier="q", fileType="csv")
     assert len(filtered) == 1
     assert filtered[0].name == "baz"

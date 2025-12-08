@@ -6,14 +6,20 @@ from viafoundry.metadata import Metadata
 
 
 @pytest.fixture
-def mock_auth(mocker):
-    """Fixture for mocked Auth class."""
-    mock = mocker.patch("viafoundry.auth.Auth")
-    mock_instance = mock.return_value
+def mock_auth(monkeypatch):
+    """Fixture for mocked Auth class without pytest-mock dependency."""
+    from viafoundry import auth as auth_module
+    mock_instance = Mock()
     mock_instance.configure.return_value = None
     mock_instance.hostname = "http://localhost"
     mock_instance.get_headers.return_value = {
-        "Authorization": "Bearer mock_token"}
+        "Authorization": "Bearer mock_token"
+    }
+
+    def fake_auth(*args, **kwargs):
+        return mock_instance
+
+    monkeypatch.setattr(auth_module, "Auth", fake_auth)
     return mock_instance
 
 

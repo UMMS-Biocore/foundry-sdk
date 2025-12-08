@@ -361,7 +361,7 @@ class Process:
             print(f"Error finding menu group: {str(e)}")
             return None
 
-    def filter_parameters(
+    def get_parameters(
         self,
         name: str = None,
         qualifier: str = None,
@@ -369,7 +369,7 @@ class Process:
         id_: str = None
     ) -> List[ServerParameterResponse]:
         """
-        Filters parameters by optional name, qualifier, fileType, and id.
+        Retrieves parameters filtered by optional name, qualifier, fileType, and id.
         All filters are case-insensitive and optional.
 
         Args:
@@ -379,7 +379,7 @@ class Process:
             id_ (str, optional): ID to filter by.
 
         Returns:
-            list[ServerParameterResponse]: List of filtered parameters.
+            list[ServerParameterResponse]: List of matched parameters.
 
         Raises:
             Exception: If listing parameters fails.
@@ -407,7 +407,7 @@ class Process:
                 )
             return filtered
         except Exception as e:
-            print(f"Error filtering parameters: {str(e)}")
+            print(f"Error getting parameters: {str(e)}")
             return []
 
     def create_process_config(
@@ -474,7 +474,7 @@ class Process:
         }
 
         def process_parameter(param: dict) -> Parameter:
-            matched_params = self.filter_parameters(
+            matched_params = self.get_parameters(
                 name=param.get('name'),
                 qualifier=param.get('qualifier'),
                 fileType=param.get('fileType'),
@@ -496,7 +496,7 @@ class Process:
                     "qualifier": param.get('qualifier'),
                     "fileType": param.get('fileType'),
                 }))
-                matched_params = self.filter_parameters(
+                matched_params = self.get_parameters(
                     name=param.get('name'),
                     qualifier=param.get('qualifier'),
                     fileType=param.get('fileType'),

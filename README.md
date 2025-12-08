@@ -33,12 +33,11 @@ The **ViaFoundry SDK and CLI** provide a powerful way to interact with ViaFoundr
     - [Duplicate a Process](#duplicate-a-process)
     - [Create a Menu Group](#create-a-menu-group)
     - [Get Menu Group by Name](#get-menu-group-by-name)
-    - [Filter Parameters](#filter-parameters)
+    - [Get Parameters](#get-parameters)
     - [Create a Process Config](#create-a-process-config)
     - [Create a Process](#create-a-process)
     - [Update a Process](#update-a-process)
     - [Delete a Process](#delete-a-process)
-    - [Get Parameters for a Pipeline](#get-parameters-for-a-pipeline)
     - [List All Parameters](#list-all-parameters)
     - [Create a Parameter](#create-a-parameter)
     - [Update a Parameter](#update-a-parameter)
@@ -70,12 +69,11 @@ The **ViaFoundry SDK and CLI** provide a powerful way to interact with ViaFoundr
     - [Duplicate a Process](#duplicate-a-process-sdk)
     - [Create a Menu Group](#create-a-menu-group-sdk)
     - [Get Menu Group by Name](#get-menu-group-by-name-sdk)
-    - [Filter Parameters](#filter-parameters-sdk)
+    - [Get Parameters](#get-parameters-sdk)
     - [Create a Process Config](#create-a-process-config-sdk)
     - [Create a Process](#create-a-process-sdk)
     - [Update a Process](#update-a-process-sdk)
     - [Delete a Process](#delete-a-process-sdk)
-    - [Get Parameters for a Pipeline](#get-parameters-for-a-pipeline-sdk)
     - [List All Parameters](#list-all-parameters-sdk)
     - [Create a Parameter](#create-a-parameter-sdk)
     - [Update a Parameter](#update-a-parameter-sdk)
@@ -409,10 +407,10 @@ Find a menu group by its name and print its ID:
 foundry process get-menu-group-by-name <group_name>
 ```
 
-#### **Filter Parameters**
-Filter parameters by name, qualifier, file type, or ID:
+#### **Get Parameters**
+Get parameters by name, qualifier, file type, or ID:
 ```bash
-foundry process filter-parameters --name <name> --qualifier <qualifier> --filetype <filetype> --id <id>
+foundry process get-parameters --name <name> --qualifier <qualifier> --filetype <filetype> --id <id>
 ```
 All options are optional and can be combined.
 
@@ -463,13 +461,6 @@ foundry process update-process --processID <process_id> --processData <path_to_j
 foundry process delete-process <process_id>
 # Or
 foundry process delete-process --processID <process_id>
-```
-
-#### Get Parameters for a Pipeline
-```bash
-foundry process get-pipeline-parameters <pipeline_id>
-# Or
-foundry process get-pipeline-parameters --pipelineID <pipeline_id>
 ```
 
 #### List All Parameters
@@ -875,10 +866,10 @@ group_id = process.get_menu_group_by_name("Menu Group Name")
 print(group_id)
 ```
 
-#### **Filter Parameters SDK**
-Filter parameters by name, qualifier, file type, or ID:
+#### **Get Parameters SDK**
+Get parameters by name, qualifier, file type, or ID:
 ```python
-filtered = process.filter_parameters(
+filtered = process.get_parameters(
     name="param_name",
     qualifier="file",
     fileType="fasta",
@@ -949,12 +940,6 @@ print(response)
 ```python
 response = process.delete_process(process_id="12345")
 print(response)
-```
-
-#### Get Pipeline Parameters SDK
-```python
-parameters = process.get_pipeline_parameters(pipeline_id="67890")
-print(parameters)
 ```
 
 #### List All Parameters SDK

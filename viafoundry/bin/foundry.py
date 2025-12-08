@@ -580,30 +580,6 @@ def delete_process(ctx: click.Context, process_id: Optional[str], processid: Opt
     response = client.process.delete_process(process_id)
     click.echo(response)
 
-
-@process.command()
-@click.argument("pipeline_id", required=False, type=str)
-@click.option("--pipelineID", type=str, help="Pipeline ID (alternative to positional argument).")
-@click.pass_context
-def get_pipeline_parameters(ctx: click.Context, pipeline_id: Optional[str], pipelineid: Optional[str]) -> None:
-    """Get parameters for a pipeline.
-
-    Args:
-        ctx (click.Context): Click context object.
-        pipeline_id (str, optional): ID of the pipeline to get parameters for.
-        pipelineid (str, optional): ID of the pipeline to get parameters for as named argument.
-    """
-    client = ctx.obj["client"]
-    pipeline_id = pipeline_id or pipelineid
-
-    if not pipeline_id:
-        click.echo("Error: Pipeline ID is required.", err=True)
-        return
-
-    response = client.process.get_pipeline_parameters(pipeline_id)
-    click.echo(response)
-
-
 @process.command()
 @click.pass_context
 def list_parameters(ctx: click.Context) -> None:
@@ -707,17 +683,17 @@ def get_menu_group_by_name(ctx: click.Context, group_name: str) -> None:
     except Exception as e:
         click.echo(f"Error: {e}", err=True)
 
-@process.command()
+@process.command(name="get-parameters")
 @click.option("--name", type=str, help="Filter by parameter name.")
 @click.option("--qualifier", type=str, help="Filter by qualifier.")
 @click.option("--filetype", type=str, help="Filter by file type.")
 @click.option("--id", "id_", type=str, help="Filter by parameter ID.")
 @click.pass_context
-def filter_parameters(ctx: click.Context, name: str, qualifier: str, filetype: str, id_: str) -> None:
-    """Filter parameters by name, qualifier, filetype, or ID."""
+def get_parameters(ctx: click.Context, name: str, qualifier: str, filetype: str, id_: str) -> None:
+    """Get parameters filtered by name, qualifier, filetype, or ID."""
     client = ctx.obj["client"]
     try:
-        filtered = client.process.filter_parameters(
+        filtered = client.process.get_parameters(
             name=name,
             qualifier=qualifier,
             fileType=filetype,

@@ -380,10 +380,15 @@ class Reports:
                     "POST", upload_endpoint, files=files, data=data
                 )
 
+            # Handle both dict and string responses
+            file_id = None
+            if isinstance(response, dict):
+                file_id = response.get("file_id")
+            
             return FileUploadResponse(
                 success=True,
                 message=f"File '{filename}' uploaded successfully",
-                file_id=response.get("file_id")
+                file_id=file_id
             )
         except Exception as e:
             return FileUploadResponse(

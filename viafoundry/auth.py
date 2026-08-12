@@ -117,7 +117,7 @@ class Auth:
         if not self.hostname:
             raise ValueError("Hostname is not set. Please configure the SDK.")
         
-        url = f"{self.hostname}/api/auth/v1/login"
+        url = f"{self.hostname}/api/v1/auth/login"
         payload = {
             "username": username,
             "password": password,
@@ -166,7 +166,7 @@ class Auth:
         if not self.hostname:
             raise ValueError("Hostname is missing. Please configure the SDK.")
 
-        url = f"{self.hostname}/api/auth/v1/personal-access-token"
+        url = f"{self.hostname}/api/v1/auth/personal-access-token"
         headers = {"Cookie": f"viafoundry-cookie={cookie_token}"}
         payload = {"name": name, "expiresAt": self.calculate_expiration_date()}
 

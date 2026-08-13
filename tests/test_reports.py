@@ -36,7 +36,7 @@ class TestReports:
 
         # Verify API call
         mock_client.call.assert_called_once_with(
-            "GET", "/api/run/v1/report123/reports/"
+            "GET", "/api/v1/run/report123/reports/"
         )
 
         # Verify file_path injection

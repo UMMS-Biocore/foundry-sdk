@@ -15,7 +15,7 @@ from .models.domain.metadata import (
 
 class Metadata:
     """
-    A class for managing metadata in the ViaFoundry API.
+    A class for managing metadata in the Foundry Connect API.
 
     Attributes:
         client (ViaFoundryClient): The client instance to interact with the API.

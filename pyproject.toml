@@ -5,7 +5,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry]
 name = "viafoundry_sdk"
 version = "1.0.25"
-description = "A Python SDK and CLI tool for interacting with ViaFoundry APIs."
+description = "A Python SDK and CLI tool for interacting with Foundry Connect APIs."
 authors = ["Alper Kucukural <alper@viascientific.com>"]
 readme = "README.md"
 license = "MIT"

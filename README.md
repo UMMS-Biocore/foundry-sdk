@@ -1,9 +1,9 @@
-# ViaFoundry SDK and CLI
+# Foundry Connect SDK and CLI
 
-The **ViaFoundry SDK and CLI** provide a powerful way to interact with ViaFoundry APIs. Whether you're a developer integrating with the API or a user looking for a simple command-line interface, this package has you covered.
+The **Foundry Connect SDK and CLI** provide a powerful way to interact with Foundry Connect APIs. Whether you're a developer integrating with the API or a user looking for a simple command-line interface, this package has you covered.
 
 > **Server compatibility.** This release calls the canonical `/api/v1/<resource>` endpoints.
-> Those paths were added in ViaFoundry **2.20.0**. Against an older server the SDK cannot log
+> Those paths were added in Foundry Connect **2.20.0**. Against an older server the SDK cannot log
 > in, because the login endpoint itself moved, so this is a hard break rather than a partial
 > loss of function. To connect to a server older than 2.20.0, install the last commit that used
 > the previous paths:
@@ -115,12 +115,12 @@ The **ViaFoundry SDK and CLI** provide a powerful way to interact with ViaFoundr
 
 ## CLI Usage
 
-The CLI provides quick access to ViaFoundry functionalities without needing to write code. Below are some common commands.
+The CLI provides quick access to Foundry Connect functionalities without needing to write code. Below are some common commands.
 
 ### **1. Configure the CLI or SDK**
 
 #### Interactive Mode
-Authenticate with your ViaFoundry account interactively:
+Authenticate with your Foundry Connect account interactively:
 ```bash
 foundry configure
 ```
@@ -141,7 +141,7 @@ foundry configure --hostname https://your-api-host.com --username your-username 
 ```
 
 Options:
-- `--hostname`: The URL of the ViaFoundry API (e.g., `https://viafoundry.com` or `http://localhost:8081`)
+- `--hostname`: The URL of the Foundry Connect API (e.g., `https://viafoundry.com` or `http://localhost:8081`)
 - `--token`: Personal access token (recommended for security)
 - `--username`: Your username (used with password authentication)
 - `--password`: Your password (used with username authentication)
@@ -151,7 +151,7 @@ Options:
 
 ### **2. Discover Endpoints**
 
-The `discover` command in the ViaFoundry CLI has been enhanced to support filtering of API endpoints. This feature allows users to narrow down the list of endpoints based on specific search criteria.
+The `discover` command in the Foundry Connect CLI has been enhanced to support filtering of API endpoints. This feature allows users to narrow down the list of endpoints based on specific search criteria.
 
 ---
 
@@ -511,7 +511,7 @@ Errors and debug information are logged to `viafoundry_errors.log` in the curren
 
 ## SDK Usage
 
-The SDK allows developers to programmatically interact with ViaFoundry APIs. Below are some examples.
+The SDK allows developers to programmatically interact with Foundry Connect APIs. Below are some examples.
 
 ### **1. Import the SDK**
 ```python
@@ -575,7 +575,7 @@ endpoints = client.discover()
 print("Discovered Endpoints:", endpoints)
 ```
 
-The `discover` function in the ViaFoundry SDK has been enhanced to support filtering of API endpoints. This feature allows developers to programmatically narrow down the list of endpoints based on specific search criteria.
+The `discover` function in the Foundry Connect SDK has been enhanced to support filtering of API endpoints. This feature allows developers to programmatically narrow down the list of endpoints based on specific search criteria.
 
 ---
 
@@ -1054,6 +1054,6 @@ The enhanced `discover` function in the SDK allows you to:
 - Access reports data and upload/download them to use in further analysis in the report section
 - Access process section and add remove parameters, processes and versions of the processes.
 
-This makes it easier to programmatically explore and interact with the available API endpoints in ViaFoundry.
+This makes it easier to programmatically explore and interact with the available API endpoints in Foundry Connect.
 
 ---

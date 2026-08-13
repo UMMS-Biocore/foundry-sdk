@@ -13,7 +13,7 @@ logging.basicConfig(filename="viafoundry_errors.log", level=logging.ERROR, forma
 
 class ViaFoundryClient:
     """
-    A client for interacting with the ViaFoundry API.
+    A client for interacting with the Foundry Connect API.
 
     Attributes:
         auth (Auth): The authentication handler.

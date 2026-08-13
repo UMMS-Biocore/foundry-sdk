@@ -5,7 +5,7 @@ from pydantic import TypeAdapter
 
 class Process:
     """
-    A class for managing processes in the ViaFoundry API.
+    A class for managing processes in the Foundry Connect API.
 
     FIXME: Circular dependency with ViaFoundryClient, using a string here - but need to refactor
     FIXME: Raise specific errors for better handling

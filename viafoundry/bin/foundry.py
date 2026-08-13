@@ -12,11 +12,11 @@ from typing import Optional
 logging.basicConfig(filename="viafoundry_errors.log", level=logging.ERROR, format="%(asctime)s - %(levelname)s - %(message)s")
 
 @click.group(invoke_without_command=True)
-@click.option('--version', '-v', is_flag=True, help="Show the version of the ViaFoundry CLI.")
+@click.option('--version', '-v', is_flag=True, help="Show the version of the Foundry Connect CLI.")
 @click.option('--config', type=click.Path(), help="Path to a custom configuration file.")
 @click.pass_context
 def cli(ctx: click.Context, version: bool, config: str) -> None:
-    """ViaFoundry CLI for configuration, endpoint discovery, and API requests.
+    """Foundry Connect CLI for configuration, endpoint discovery, and API requests.
 
     Args:
         ctx (click.Context): Click context object.
@@ -24,7 +24,7 @@ def cli(ctx: click.Context, version: bool, config: str) -> None:
         config (str): Path to custom configuration file.
     """
     if version:
-        click.echo(f"ViaFoundry CLI version {__version__}")
+        click.echo(f"Foundry Connect CLI version {__version__}")
         return
 
     ctx.ensure_object(dict)
@@ -32,7 +32,7 @@ def cli(ctx: click.Context, version: bool, config: str) -> None:
         ctx.obj['client'] = ViaFoundryClient(config)
         ctx.obj['auth'] = Auth(config)
     except Exception as e:
-        logging.error("Failed to initialize ViaFoundry client or authentication", exc_info=True)
+        logging.error("Failed to initialize Foundry Connect client or authentication", exc_info=True)
         click.echo("Error: Failed to initialize the CLI. Please check your configuration file.", err=True)
         raise click.Abort()
 

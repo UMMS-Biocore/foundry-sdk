@@ -19,7 +19,7 @@ from viafoundry.models.domain.reports import (
 
 class Reports:
     """
-    A class for managing reports in the ViaFoundry API.
+    A class for managing reports in the Foundry Connect API.
 
     Attributes:
         client (ViaFoundryClient): The client instance to interact with the API.

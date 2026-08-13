@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-ViaFoundry SDK Guide
+Foundry Connect SDK Guide
 ====================
 
 .. toctree::
@@ -15,14 +15,14 @@ ViaFoundry SDK Guide
    modules/reports
    modules/utils
 
-The ViaFoundry SDK provides a powerful way to interact with ViaFoundry programmatically.
+The Foundry Connect SDK provides a powerful way to interact with Foundry Connect programmatically.
 Available in both Python and R, the SDK enables seamless integration with your existing workflows
 and analysis pipelines. This guide will help you get started with the SDK and show you how to use its various features.
 
 Available SDKs
 --------------
 
-- **Python SDK**: Full-featured SDK with comprehensive support for all ViaFoundry features
+- **Python SDK**: Full-featured SDK with comprehensive support for all Foundry Connect features
 - **R SDK**: Perfect for data scientists and researchers working in R
 
 This guide primarily focuses on the Python SDK, but most concepts and operations are similarly available in the R SDK.
@@ -30,10 +30,10 @@ This guide primarily focuses on the Python SDK, but most concepts and operations
 Overview
 --------
 
-The ViaFoundry SDK is available as both a Python package and a Command Line Interface (CLI).
+The Foundry Connect SDK is available as both a Python package and a Command Line Interface (CLI).
 It allows you to:
 
-- Interact with ViaFoundry APIs programmatically
+- Interact with Foundry Connect APIs programmatically
 - Manage reports and processes
 - Upload and download files
 - Launch apps and pipelines

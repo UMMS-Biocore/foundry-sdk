@@ -2,6 +2,16 @@
 
 The **ViaFoundry SDK and CLI** provide a powerful way to interact with ViaFoundry APIs. Whether you're a developer integrating with the API or a user looking for a simple command-line interface, this package has you covered.
 
+> **Server compatibility.** This release calls the canonical `/api/v1/<resource>` endpoints.
+> Those paths were added in ViaFoundry **2.20.0**. Against an older server the SDK cannot log
+> in, because the login endpoint itself moved, so this is a hard break rather than a partial
+> loss of function. To connect to a server older than 2.20.0, install the last commit that used
+> the previous paths:
+>
+> ```bash
+> pip install "git+https://github.com/UMMS-Biocore/foundry-sdk.git@e5baa08546ea"
+> ```
+
 ---
 
 ## Table of Contents
@@ -172,15 +182,15 @@ foundry discover --search "reports"
 ```plaintext
 Available API Endpoints:
 
-Endpoint: /run/v1/{runId}/reports
+Endpoint: /v1/run/{runId}/reports
 Method: get
 Description: 'View the metdata and resource paths for run reports'
 
-Endpoint: /run/v1/{runId}/reports-dirs
+Endpoint: /v1/run/{runId}/reports-dirs
 Method: get
 Description: 'Upload report directories'
 
-Endpoint: /run/v1/{runId}/reports/upload/:runUUID
+Endpoint: /v1/run/{runId}/reports/upload/:runUUID
 Method: post
 Description: 'list report directories'
 Data to send: {
@@ -356,7 +366,7 @@ Replace REPORT_ID with the target report’s ID and FILE_PATH with the path to t
 ### **5. Example: Launch an App**
 Send a POST request to a specific endpoint to launch an app:
 ```bash
-foundry call --endpoint /api/app/v1/call/1 --method POST --data '{"type": "standalone"}'
+foundry call --endpoint /api/v1/app/call/1 --method POST --data '{"type": "standalone"}'
 ```
 ### **6. Process Management**
 
@@ -613,7 +623,7 @@ for endpoint, methods in filtered_endpoints.items():
 
 #### Output:
 ```plaintext
-Endpoint: /run/v1/{runId}/reports
+Endpoint: /v1/run/{runId}/reports
 Method: get
 Description: View the metdata and resource paths for run reports
 ```

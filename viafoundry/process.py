@@ -258,7 +258,7 @@ class Process:
             Exception: If listing parameters fails.
         """
         try:
-            endpoint = f"/api/parameter/v1"
+            endpoint = f"/api/v1/parameter"
             response = self.client.call("GET", endpoint)
             return self._validate_with_type_adapter(List[ServerParameterResponse], response)
         except Exception as e:
@@ -278,7 +278,7 @@ class Process:
             Exception: If creating the parameter fails.
         """
         try:
-            endpoint = "/api/parameter/v1"
+            endpoint = "/api/v1/parameter"
             if not isinstance(parameter_data, Parameter):
                 parameter_data = Parameter.model_validate(parameter_data)
             parameter_data_dict = parameter_data.model_dump(
@@ -306,7 +306,7 @@ class Process:
             Exception: If updating the parameter fails.
         """
         try:
-            endpoint = f"/api/parameter/v1/{parameter_id}"
+            endpoint = f"/api/v1/parameter/{parameter_id}"
             if not isinstance(parameter_data, Parameter):
                 parameter_data = Parameter.model_validate(parameter_data)
             parameter_data_dict = parameter_data.model_dump(
@@ -331,7 +331,7 @@ class Process:
             Exception: If deleting the parameter fails.
         """
         try:
-            endpoint = f"/api/parameter/v1/{parameter_id}"
+            endpoint = f"/api/v1/parameter/{parameter_id}"
             return self.client.call("DELETE", endpoint)
         except Exception as e:
             raise Exception(

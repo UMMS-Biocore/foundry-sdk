@@ -51,7 +51,7 @@ class Reports:
             RuntimeError: If fetching report data fails.
         """
         try:
-            endpoint = f"/api/run/v1/{report_id}/reports/"
+            endpoint = f"/api/v1/run/{report_id}/reports/"
             report_data = self.client.call("GET", endpoint)
 
             # Recursively add `file_dir` to all entries
@@ -361,7 +361,7 @@ class Reports:
             )
 
             # Construct the upload endpoint
-            upload_endpoint = f"/api/run/v1/{report_id}/reports/upload/{attempt_id}"
+            upload_endpoint = f"/api/v1/run/{report_id}/reports/upload/{attempt_id}"
 
             # Guess the MIME type of the file
             mime_type, _ = mimetypes.guess_type(upload_request.local_file_path)
@@ -412,7 +412,7 @@ class Reports:
         """
         try:
             # Define the API endpoint
-            endpoint = f"/api/run/v1/{report_id}/reports"
+            endpoint = f"/api/v1/run/{report_id}/reports"
 
             # Call the API to fetch report data
             response = self.client.call("GET", endpoint)

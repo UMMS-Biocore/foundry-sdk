@@ -226,7 +226,7 @@ class Process:
             return self._validate_with_type_adapter(ProcessResponse, response)
         except Exception as e:
             raise Exception(
-                f"Error 1010: Failed to update process with ID {process_id}"
+                f"Error 1010: Failed to update process with ID {process_id}: {e}"
             ) from e
 
     def delete_process(self, process_id: Union[str, int]) -> None:

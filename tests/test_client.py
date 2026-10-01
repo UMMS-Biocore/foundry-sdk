@@ -63,3 +63,34 @@ class TestViaFoundryClient:
             client.discover()
 
         assert "Failed to fetch endpoints" in str(exc_info.value)
+
+
+class TestBadRequestMessage:
+    """A 400 carries the server's reason, which tells the caller what to fix."""
+
+    def _response(self, status, body=None, text=""):
+        import requests
+        response = requests.Response()
+        response.status_code = status
+        if body is not None:
+            import json
+            response._content = json.dumps(body).encode()
+            response.headers["Content-Type"] = "application/json"
+        else:
+            response._content = text.encode()
+        return response
+
+    def test_400_passes_the_server_message_through(self, client):
+        response = self._response(400, {"message": "names parameters that are not stored on process 5"})
+        with pytest.raises(RuntimeError, match="not stored on process 5"):
+            client._handle_http_error(response)
+
+    def test_400_without_a_json_body_keeps_the_generic_message(self, client):
+        response = self._response(400, text="<html>oops</html>")
+        with pytest.raises(RuntimeError, match="Check the request parameters"):
+            client._handle_http_error(response)
+
+    def test_400_reads_an_error_key_too(self, client):
+        response = self._response(400, {"error": "Forbidden field"})
+        with pytest.raises(RuntimeError, match="Forbidden field"):
+            client._handle_http_error(response)

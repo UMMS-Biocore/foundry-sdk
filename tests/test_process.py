@@ -437,3 +437,78 @@ def test_list_menu_groups_failure(process, mock_client):
     with pytest.raises(Exception) as e:
         process.list_menu_groups()
     assert "Failed to list menu groups" in str(e.value)
+
+
+def test_config_parameter_keeps_port_id_and_publish_pattern():
+    # Without these fields pydantic drops them, every update recreates every
+    # port with a new id, and output ports lose their publish pattern.
+    from viafoundry.models.domain.process import ConfigParameter
+    port = ConfigParameter.model_validate({
+        "id": 42, "parameterId": 7, "displayName": "reads",
+        "operator": "", "operatorContent": "", "optional": False,
+        "test": "", "regEx": "*.bam",
+    })
+    dumped = port.model_dump(mode="json", exclude_none=True, by_alias=True)
+    assert dumped["id"] == 42
+    assert dumped["regEx"] == "*.bam"
+
+
+def test_config_parameter_without_id_sends_no_id():
+    # The server refuses id: null, and a port without an id is a new port.
+    from viafoundry.models.domain.process import ConfigParameter
+    port = ConfigParameter.model_validate({
+        "parameterId": 7, "displayName": "reads", "test": "",
+    })
+    dumped = port.model_dump(mode="json", exclude_none=True, by_alias=True)
+    assert "id" not in dumped
+    assert "regEx" not in dumped
+
+
+def _process_config(**overrides):
+    body = {
+        "name": "proc", "summary": "", "menuGroupId": 1,
+        "inputParameters": [], "outputParameters": [],
+        "revisionComment": "edit",
+        "script": {"body": "echo", "header": "", "footer": "", "language": "bash"},
+        "permissionSettings": {"viewPermissions": 3},
+    }
+    body.update(overrides)
+    return ProcessConfig.model_validate(body)
+
+
+def test_update_process_sends_port_ids_and_remove_all_flags(process, mock_client):
+    mock_client.call.return_value = {
+        "id": 1, "name": "proc", "process_group_id": 1}
+    config = _process_config(
+        inputParameters=[{
+            "id": 11, "parameterId": 7, "displayName": "reads",
+            "operator": "", "operatorContent": "", "optional": False, "test": "",
+        }],
+        removeAllOutputParameters=True,
+    )
+    process.update_process(1, config)
+    method, endpoint = mock_client.call.call_args.args
+    sent = mock_client.call.call_args.kwargs["data"]
+    assert (method, endpoint) == ("PUT", "/api/v1/process/1")
+    assert sent["inputParameters"][0]["id"] == 11
+    assert sent["removeAllOutputParameters"] is True
+    assert "removeAllInputParameters" not in sent
+
+
+def test_update_process_failure_names_the_server_reason(process, mock_client):
+    mock_client.call.side_effect = RuntimeError(
+        "Error 302: Bad Request: an empty outputParameters needs removeAllOutputParameters")
+    with pytest.raises(Exception) as excinfo:
+        process.update_process(1, _process_config())
+    assert "removeAllOutputParameters" in str(excinfo.value)
+
+
+def test_process_response_keeps_the_port_test_value():
+    port = {
+        "id": 11, "parameter_id": 7, "sname": "reads", "operator": "",
+        "closure": "", "reg_ex": None, "optional": "", "test": "x.fq",
+        "name": "reads", "file_type": "fastq", "qualifier": "file",
+    }
+    response = ProcessResponse.model_validate(
+        {"id": 1, "name": "proc", "process_group_id": 1, "inputs": [port]})
+    assert response.inputs[0].test == "x.fq"

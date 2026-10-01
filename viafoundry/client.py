@@ -241,6 +241,9 @@ class ViaFoundryClient:
         """
         status_code = response.status_code
         if status_code == 400:
+            detail = self._error_message_from(response)
+            if detail:
+                self._raise_error(302, f"Bad Request: {detail}")
             self._raise_error(302, "Bad Request: Check the request parameters or payload.")
         elif status_code == 401:
             self._raise_error(303, "Unauthorized: Ensure proper authentication.")
@@ -252,6 +255,25 @@ class ViaFoundryClient:
             self._raise_error(306, "Internal Server Error: Something went wrong on the server.")
         else:
             self._raise_error(307, f"Unexpected HTTP error occurred. Status code: {status_code}.")
+
+    @staticmethod
+    def _error_message_from(response: requests.Response) -> Optional[str]:
+        """
+        Returns the message the server put in an error response body, if any.
+
+        A 400 names what was wrong with the request, such as a refused field,
+        and that message is the only way a caller can learn how to fix it.
+        """
+        try:
+            body = response.json()
+        except ValueError:
+            return None
+        if isinstance(body, dict):
+            for key in ("message", "error"):
+                value = body.get(key)
+                if isinstance(value, str) and value.strip():
+                    return value.strip()
+        return None
 
     def _raise_error(self, code: int, message: str) -> None:
         """

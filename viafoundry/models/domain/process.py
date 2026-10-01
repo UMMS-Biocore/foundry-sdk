@@ -6,7 +6,15 @@ from enum import IntEnum
 class ConfigParameter(BaseModel):
     """
     Model representing a parameter in the process configuration.
+
+    On an update, a port that carries ``id`` updates the stored port with that
+    id in place. A port without ``id`` is added as a new port, and every stored
+    port the update does not name is deleted.
     """
+    id: Optional[int] = Field(
+        None,
+        description="Id of the stored process port. Set it to update that port "
+                    "in place; leave it out to add a new port.")
     parameterId: Optional[int] = Field(...,
                                        description="Id number of the parameter")
     displayName: str = Field(
@@ -19,6 +27,10 @@ class ConfigParameter(BaseModel):
         False, description="Whether the parameter is optional")
     test: str = Field(
         ..., description="Test for the parameter, if applicable")
+    regEx: Optional[str] = Field(
+        None,
+        description="Publish pattern of an output port. Leave it out on an "
+                    "update to keep the stored pattern.")
 
 
 class Parameter(BaseModel):
@@ -171,6 +183,16 @@ class ProcessConfig(BaseModel):
         ...,
         description="Permission settings for the process",
     )
+    removeAllInputParameters: Optional[bool] = Field(
+        None,
+        description="Set to true to confirm that an empty inputParameters "
+                    "list should delete every stored input port.",
+    )
+    removeAllOutputParameters: Optional[bool] = Field(
+        None,
+        description="Set to true to confirm that an empty outputParameters "
+                    "list should delete every stored output port.",
+    )
 
 
 class ParameterResponse(BaseModel):
@@ -204,6 +226,10 @@ class ParameterResponse(BaseModel):
     optional: Optional[str] = Field(
         None,
         description="Indicates if the parameter is optional",
+    )
+    test: Optional[str] = Field(
+        None,
+        description="Test value for the parameter, if applicable",
     )
     name: str = Field(
         ...,

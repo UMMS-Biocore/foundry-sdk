@@ -43,9 +43,10 @@ def cli(ctx: click.Context, version: bool, config: str) -> None:
 @click.option('--token', default=None, help="Personal access token (alternative to username/password)")
 @click.option('--identity-type', default=1, type=int, help="Identity type (default: 1)")
 @click.option('--redirect-uri', default="https://viafoundry.com/user", help="Redirect URI (default: https://viafoundry.com/user)")
+@click.option('--mfa-code', default=None, help="6 digit authenticator code, when your account uses multi-factor sign-in (prompted for when omitted)")
 @click.pass_context
 def configure(ctx: click.Context, hostname: str = None, username: str = None, password: str = None, token: str = None,
-           identity_type: int = 1, redirect_uri: str = "https://viafoundry.com/user") -> None:
+           identity_type: int = 1, redirect_uri: str = "https://viafoundry.com/user", mfa_code: str = None) -> None:
     """Configure the SDK with authentication details.
     
     You can authenticate using either:
@@ -79,7 +80,7 @@ def configure(ctx: click.Context, hostname: str = None, username: str = None, pa
         elif username:
             if not password:
                 password = click.prompt("Password", hide_input=True, type=str)
-            auth.configure(hostname, username, password, identity_type=identity_type, redirect_uri=redirect_uri)
+            auth.configure(hostname, username, password, identity_type=identity_type, redirect_uri=redirect_uri, mfa_code=mfa_code)
             click.echo("Configuration saved successfully.")
         # Interactive mode: ask user to choose
         else:
@@ -95,7 +96,7 @@ def configure(ctx: click.Context, hostname: str = None, username: str = None, pa
             else:
                 username = click.prompt("Username", type=str)
                 password = click.prompt("Password", hide_input=True, type=str)
-                auth.configure(hostname, username, password, identity_type=identity_type, redirect_uri=redirect_uri)
+                auth.configure(hostname, username, password, identity_type=identity_type, redirect_uri=redirect_uri, mfa_code=mfa_code)
                 click.echo("Configuration saved successfully.")
     except Exception as e:
         logging.error("Failed to configure authentication", exc_info=True)

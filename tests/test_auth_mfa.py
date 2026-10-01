@@ -54,13 +54,20 @@ class FakeServer(BaseHTTPRequestHandler):
         cookies = self._cookies()
         self.state["calls"].append((self.path, body, cookies))
 
-        if self.path == "/api/v1/auth/login":
+        # Like the server, every auth route answers on both mounts. Only the client's cookie
+        # path scoping decides whether the challenge cookie arrives.
+        route = None
+        for mount in ("/api/v1/auth/", "/api/auth/v1/"):
+            if self.path.startswith(mount):
+                route = self.path[len(mount):]
+
+        if route == "login":
             if self.state["mfa"]:
                 return self._send(200, {"mfaRequired": True, "purpose": self.state["mfa"]},
                                   [f"via_mfa_challenge={CHALLENGE}; Path=/api/auth; HttpOnly; SameSite=Lax"])
             return self._send(200, {"user": {"id": 1}}, [self._session_cookie()])
 
-        if self.path == "/api/auth/v1/mfa/verify":
+        if route == "mfa/verify":
             if self.headers.get("Content-Type", "").split(";")[0] != "application/json":
                 return self._send(415, {"error": "unsupported_media_type", "message": "json only"})
             if cookies.get("via_mfa_challenge") != CHALLENGE:
@@ -69,7 +76,7 @@ class FakeServer(BaseHTTPRequestHandler):
                 return self._send(200, {"user": {"id": 1}, "next": "/"}, [self._session_cookie()])
             return self._send(401, {"error": "invalid_code", "message": "That code did not work."})
 
-        if self.path == "/api/v1/auth/personal-access-token":
+        if route == "personal-access-token":
             if SESSION not in cookies.values():
                 return self._send(401, {"error": "unauthenticated"})
             return self._send(200, {"token": "pat-from-server"})

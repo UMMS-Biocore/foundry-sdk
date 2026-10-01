@@ -1,5 +1,5 @@
 import requests
-from viafoundry.auth import Auth
+from viafoundry.auth import Auth, MfaError
 from requests.exceptions import RequestException, MissingSchema
 from viafoundry.reports import Reports
 from viafoundry.process import Process
@@ -49,7 +49,7 @@ class ViaFoundryClient:
             self._raise_error(101, "Failed to initialize authentication. Check your configuration file.")
         self.endpoints_cache = None  # Cache for discovered endpoints
 
-    def configure_auth(self, hostname: str, username: str = None, password: str = None, token: str = None, identity_type: int = 1, redirect_uri: str = "http://localhost/user") -> None:
+    def configure_auth(self, hostname: str, username: str = None, password: str = None, token: str = None, identity_type: int = 1, redirect_uri: str = "http://localhost/user", mfa_code: str = None, recovery_code: str = None) -> None:
         """
         Configures authentication by setting up the token.
 
@@ -60,19 +60,27 @@ class ViaFoundryClient:
             token (str, optional): Pre-generated personal access token.
             identity_type (int): The identity type. Defaults to 1.
             redirect_uri (str): The redirect URI. Defaults to "http://localhost/user".
+            mfa_code (str, optional): The 6 digit code from your authenticator app, when your account
+                uses multi-factor sign-in. Prompted for at a terminal when omitted.
+            recovery_code (str, optional): A recovery code to use instead of an authenticator code.
 
         Raises:
             RuntimeError: If authentication configuration fails.
-        
+
         Examples:
             Using username and password:
                 client.configure_auth(hostname="https://api.example.com", username="user", password="pass")
-            
+
+            With multi-factor sign-in:
+                client.configure_auth(hostname="https://api.example.com", username="user", password="pass", mfa_code="123456")
+
             Using personal access token:
                 client.configure_auth(hostname="https://api.example.com", token="your_pat_token")
         """
         try:
-            self.auth.configure(hostname, username, password, token, identity_type, redirect_uri)
+            self.auth.configure(hostname, username, password, token, identity_type, redirect_uri, mfa_code=mfa_code, recovery_code=recovery_code)
+        except MfaError as e:
+            self._raise_error(105, str(e))
         except MissingSchema:
             self._raise_error(104, f"Invalid hostname '{hostname}'. No scheme supplied. Did you mean 'https://{hostname}'?")
         except RequestException:

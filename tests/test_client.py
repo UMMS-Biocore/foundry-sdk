@@ -19,8 +19,16 @@ class TestViaFoundryClient:
 
         # Verify configuration
         mock_auth.configure.assert_called_once_with(
-            "http://localhost", "user", "pass", None, 1, "http://localhost/user"
+            "http://localhost", "user", "pass", None, 1, "http://localhost/user", mfa_code=None, recovery_code=None
         )
+
+    def test_client_configure_auth_mfa_error_keeps_its_message(self, client, mock_auth):
+        """An MFA failure reaches the caller with the server's explanation, not a generic error."""
+        from viafoundry.auth import MfaError
+
+        mock_auth.configure.side_effect = MfaError("Multi-factor sign-in failed: That code did not work.")
+        with pytest.raises(RuntimeError, match="Error 105: Multi-factor sign-in failed: That code did not work."):
+            client.configure_auth("http://localhost", "user", "pass", mfa_code="000000")
 
     def test_discover(self, client, mock_auth, monkeypatch):
         """Test API endpoint discovery functionality."""

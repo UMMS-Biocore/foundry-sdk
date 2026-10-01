@@ -145,6 +145,9 @@ Options:
 - `--token`: Personal access token (recommended for security)
 - `--username`: Your username (used with password authentication)
 - `--password`: Your password (used with username authentication)
+- `--mfa-code`: The 6 digit code from your authenticator app, when your account uses multi-factor sign-in. You are prompted for it when you leave it out, and the prompt also takes a recovery code.
+
+If your account must set up multi-factor sign-in but has not yet, sign in once in a browser to add your authenticator app, then run `foundry configure` again.
 
 ---
 
@@ -565,6 +568,8 @@ client.configure_auth(
     password="your-password"
 )
 ```
+
+If your account uses multi-factor sign-in, also pass the 6 digit code from your authenticator app as `mfa_code="123456"`, or a recovery code as `recovery_code="..."`. At a terminal you are prompted for the code when you leave both out. The SDK stores a personal access token that lasts 30 days, so you enter a code about once a month.
 
 ---
 

@@ -50,8 +50,12 @@ class Auth:
             "hostname": self.hostname,
             "bearer_token": self.bearer_token  # Save only the bearer token
         }
-        with open(self.config_path, "w") as f:
+        # The file holds a bearer token, so only its owner may read it.
+        fd = os.open(self.config_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+        with os.fdopen(fd, "w") as f:
             json.dump(config, f, indent=4)
+        if os.name == "posix":
+            os.chmod(self.config_path, 0o600)  # also tighten a file an older version created
 
     def configure(self, hostname: str, username: Optional[str] = None, password: Optional[str] = None, token: Optional[str] = None, identity_type: int = 1, redirect_uri: str = "https://viafoundry.com/user", mfa_code: Optional[str] = None, recovery_code: Optional[str] = None) -> None:
         """Prompt user for credentials if necessary and authenticate.

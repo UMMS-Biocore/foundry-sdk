@@ -90,7 +90,7 @@ def configure(ctx: click.Context, hostname: str = None, username: str = None, pa
             auth_choice = click.prompt("Enter choice", type=click.Choice(['1', '2']), show_choices=False)
             
             if auth_choice == '1':
-                token = click.prompt("Personal Access Token", type=str)
+                token = click.prompt("Personal Access Token", hide_input=True, type=str)
                 auth.configure_token(hostname, token)
                 click.echo("Configuration saved successfully using token.")
             else:

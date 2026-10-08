@@ -50,10 +50,14 @@ class Auth:
             "hostname": self.hostname,
             "bearer_token": self.bearer_token  # Save only the bearer token
         }
-        with open(self.config_path, "w") as f:
+        # The file holds a bearer token, so only its owner may read it.
+        fd = os.open(self.config_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+        with os.fdopen(fd, "w") as f:
             json.dump(config, f, indent=4)
+        if os.name == "posix":
+            os.chmod(self.config_path, 0o600)  # also tighten a file an older version created
 
-    def configure(self, hostname: str, username: Optional[str] = None, password: Optional[str] = None, token: Optional[str] = None, identity_type: int = 1, redirect_uri: str = "https://viafoundry.com/user", mfa_code: Optional[str] = None, recovery_code: Optional[str] = None) -> None:
+    def configure(self, hostname: str, username: Optional[str] = None, password: Optional[str] = None, token: Optional[str] = None, identity_type: int = 1, redirect_uri: Optional[str] = None, mfa_code: Optional[str] = None, recovery_code: Optional[str] = None) -> None:
         """Prompt user for credentials if necessary and authenticate.
 
         Args:
@@ -62,7 +66,7 @@ class Auth:
             password (str, optional): The password for authentication. Defaults to None.
             token (str, optional): Pre-generated personal access token. Defaults to None.
             identity_type (int, optional): The identity type. Defaults to 1.
-            redirect_uri (str, optional): The redirect URI. Defaults to "https://viafoundry.com/user".
+            redirect_uri (str, optional): The redirect URI. Defaults to "<hostname>/user".
             mfa_code (str, optional): The 6 digit code from your authenticator app, when your account
                 uses multi-factor sign-in. Prompted for at a terminal when omitted.
             recovery_code (str, optional): A recovery code to use instead of an authenticator code.
@@ -120,7 +124,7 @@ class Auth:
         self.bearer_token = token
         self.save_config()
 
-    def login(self, username: str, password: str, identity_type: int = 1, redirect_uri: str = "https://viafoundry.com/user", mfa_code: Optional[str] = None, recovery_code: Optional[str] = None) -> str:
+    def login(self, username: str, password: str, identity_type: int = 1, redirect_uri: Optional[str] = None, mfa_code: Optional[str] = None, recovery_code: Optional[str] = None) -> str:
         """Sign in and return the session cookie value.
 
         When the account uses multi-factor sign-in, the server answers the password step with a
@@ -131,7 +135,7 @@ class Auth:
             username (str): The username for authentication.
             password (str): The password for authentication.
             identity_type (int, optional): The identity type. Defaults to 1.
-            redirect_uri (str, optional): The redirect URI. Defaults to "https://viafoundry.com/user".
+            redirect_uri (str, optional): The redirect URI. Defaults to "<hostname>/user".
             mfa_code (str, optional): The 6 digit code from your authenticator app.
             recovery_code (str, optional): A recovery code to use instead of an authenticator code.
 
@@ -149,7 +153,8 @@ class Auth:
             "username": username,
             "password": password,
             "identityType": identity_type,
-            "redirectUri": redirect_uri
+            # A server checks this against its own address, so default to the configured host.
+            "redirectUri": redirect_uri or f"{self.hostname.rstrip('/')}/user"
         }
 
         # One cookie jar for the whole sign-in, so the challenge cookie set by the password step

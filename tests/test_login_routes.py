@@ -1,0 +1,29 @@
+from unittest.mock import MagicMock, patch
+
+from viafoundry.auth import Auth
+
+
+def _auth(tmp_path):
+    auth = Auth(config_path=str(tmp_path / "config"))
+    auth.hostname = "https://foundry.example.org"
+    return auth
+
+
+def test_login_redirect_defaults_to_the_configured_host(tmp_path):
+    auth = _auth(tmp_path)
+    session = MagicMock()
+    session.post.return_value.json.return_value = {}
+    session.cookies.get.return_value = "cookie"
+    with patch("viafoundry.auth.requests.Session", return_value=session):
+        auth.login("user", "pw")
+    assert session.post.call_args.kwargs["json"]["redirectUri"] == "https://foundry.example.org/user"
+
+
+def test_login_redirect_can_still_be_overridden(tmp_path):
+    auth = _auth(tmp_path)
+    session = MagicMock()
+    session.post.return_value.json.return_value = {}
+    session.cookies.get.return_value = "cookie"
+    with patch("viafoundry.auth.requests.Session", return_value=session):
+        auth.login("user", "pw", redirect_uri="https://other.example.org/user")
+    assert session.post.call_args.kwargs["json"]["redirectUri"] == "https://other.example.org/user"

@@ -49,7 +49,7 @@ class ViaFoundryClient:
             self._raise_error(101, "Failed to initialize authentication. Check your configuration file.")
         self.endpoints_cache = None  # Cache for discovered endpoints
 
-    def configure_auth(self, hostname: str, username: str = None, password: str = None, token: str = None, identity_type: int = 1, redirect_uri: str = "http://localhost/user", mfa_code: str = None, recovery_code: str = None) -> None:
+    def configure_auth(self, hostname: str, username: str = None, password: str = None, token: str = None, identity_type: int = 1, redirect_uri: str = None, mfa_code: str = None, recovery_code: str = None) -> None:
         """
         Configures authentication by setting up the token.
 
@@ -59,7 +59,7 @@ class ViaFoundryClient:
             password (str, optional): The password for authentication.
             token (str, optional): Pre-generated personal access token.
             identity_type (int): The identity type. Defaults to 1.
-            redirect_uri (str): The redirect URI. Defaults to "http://localhost/user".
+            redirect_uri (str): The redirect URI. Defaults to "<hostname>/user".
             mfa_code (str, optional): The 6 digit code from your authenticator app, when your account
                 uses multi-factor sign-in. Prompted for at a terminal when omitted.
             recovery_code (str, optional): A recovery code to use instead of an authenticator code.

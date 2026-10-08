@@ -19,7 +19,7 @@ class TestViaFoundryClient:
 
         # Verify configuration
         mock_auth.configure.assert_called_once_with(
-            "http://localhost", "user", "pass", None, 1, "http://localhost/user", mfa_code=None, recovery_code=None
+            "http://localhost", "user", "pass", None, 1, None, mfa_code=None, recovery_code=None
         )
 
     def test_client_configure_auth_mfa_error_keeps_its_message(self, client, mock_auth):

@@ -42,11 +42,11 @@ def cli(ctx: click.Context, version: bool, config: str) -> None:
 @click.option('--password', default=None, help="Login password")
 @click.option('--token', default=None, help="Personal access token (alternative to username/password)")
 @click.option('--identity-type', default=1, type=int, help="Identity type (default: 1)")
-@click.option('--redirect-uri', default="https://viafoundry.com/user", help="Redirect URI (default: https://viafoundry.com/user)")
+@click.option('--redirect-uri', default=None, help="Redirect URI (default: <hostname>/user)")
 @click.option('--mfa-code', default=None, help="6 digit authenticator code, when your account uses multi-factor sign-in (prompted for when omitted)")
 @click.pass_context
 def configure(ctx: click.Context, hostname: str = None, username: str = None, password: str = None, token: str = None,
-           identity_type: int = 1, redirect_uri: str = "https://viafoundry.com/user", mfa_code: str = None) -> None:
+           identity_type: int = 1, redirect_uri: str = None, mfa_code: str = None) -> None:
     """Configure the SDK with authentication details.
     
     You can authenticate using either:
@@ -64,7 +64,7 @@ def configure(ctx: click.Context, hostname: str = None, username: str = None, pa
         password (str, optional): Login password.
         token (str, optional): Personal access token.
         identity_type (int, optional): Identity type. Defaults to 1.
-        redirect_uri (str, optional): Redirect URI. Defaults to "https://viafoundry.com/user".
+        redirect_uri (str, optional): Redirect URI. Defaults to "<hostname>/user".
     """
     auth = ctx.obj['auth']
     try:

@@ -113,7 +113,7 @@ def test_without_mfa_current_cookie_name(server, auth):
     host, state = server
     saved = configure(auth, host)
     assert saved == {"hostname": host, "bearer_token": "pat-from-server"}
-    assert [c[0] for c in state["calls"]] == ["/api/v1/auth/login", "/api/v1/auth/personal-access-token"]
+    assert [c[0] for c in state["calls"]] == ["/api/v1/auth/login", "/api/auth/v1/personal-access-token"]
 
 
 def test_without_mfa_legacy_cookie_name(server, auth):

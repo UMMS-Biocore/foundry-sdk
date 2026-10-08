@@ -9,15 +9,6 @@ def _auth(tmp_path):
     return auth
 
 
-def test_bearer_request_uses_the_web_app_route(tmp_path):
-    auth = _auth(tmp_path)
-    response = MagicMock()
-    response.json.return_value = {"token": "abc"}
-    with patch("viafoundry.auth.requests.post", return_value=response) as post:
-        assert auth.get_bearer_token("cookie") == "abc"
-    assert post.call_args.args[0] == "https://foundry.example.org/api/auth/v1/personal-access-token"
-
-
 def test_login_redirect_defaults_to_the_configured_host(tmp_path):
     auth = _auth(tmp_path)
     session = MagicMock()

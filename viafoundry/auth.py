@@ -231,8 +231,7 @@ class Auth:
         if not self.hostname:
             raise ValueError("Hostname is missing. Please configure the SDK.")
 
-        # The route the web app uses; the canonical /api/v1/auth mount answers 404 here on some servers.
-        url = f"{self.hostname}/api/auth/v1/personal-access-token"
+        url = f"{self.hostname}/api/v1/auth/personal-access-token"
         headers = {"Cookie": "; ".join(f"{name}={cookie_token}" for name in SESSION_COOKIE_NAMES)}
         payload = {"name": name, "expiresAt": self.calculate_expiration_date()}
 

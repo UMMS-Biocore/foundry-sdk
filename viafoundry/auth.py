@@ -237,6 +237,13 @@ class Auth:
 
         # Send POST request to get the bearer token
         response = requests.post(url, headers=headers, json=payload)
+        # The server answers 404 when the Personal Access Token feature is off for this user,
+        # which is per user and off by default. Say so instead of a bare Not Found.
+        if response.status_code == 404:
+            raise ValueError(
+                "Signed in, but personal access tokens are not enabled for this account. "
+                "Ask an administrator to enable the Personal Access Token feature for your user, then run configure again."
+            )
         response.raise_for_status()
 
         data = response.json()

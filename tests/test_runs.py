@@ -93,3 +93,8 @@ def test_default_directory_none_without_login(user):
 def test_client_exposes_runs(client):
     assert isinstance(client.runs, Runs)
     assert client.runs.client is client
+
+
+@pytest.mark.parametrize("login", [".", "..", ".hidden"])
+def test_dot_logins_give_no_default(login):
+    assert default_execution_directory({**ENV, "username": login}, "r") is None

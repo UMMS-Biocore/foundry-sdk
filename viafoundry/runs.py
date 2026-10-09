@@ -3,7 +3,8 @@ import re
 from typing import Dict, List, Optional
 
 _SAFE_SEGMENT = re.compile(r"[^A-Za-z0-9._-]")
-_LOGIN_NAME = re.compile(r"[A-Za-z0-9._-]+")
+# A login never starts with a dot, so "." and ".." cannot climb out of /home.
+_LOGIN_NAME = re.compile(r"[A-Za-z0-9_][A-Za-z0-9._-]*")
 
 
 def default_execution_directory(environment: Dict, run_name: str) -> Optional[str]:
@@ -75,7 +76,12 @@ class Runs:
         publish_dir: Optional[str] = None,
         name: Optional[str] = None,
     ) -> Dict:
-        """Save only the fields given. Inputs merge; process_options replaces the whole set."""
+        """Save only the fields given.
+
+        On a Foundry pipeline, inputs merge with the saved ones; on an external
+        (nf-core) pipeline the inputs dict is replaced whole, so send it complete.
+        process_options always replaces the whole set.
+        """
         fields = {
             "inputs": inputs,
             "processOptions": process_options,

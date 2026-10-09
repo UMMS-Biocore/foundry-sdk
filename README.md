@@ -521,13 +521,16 @@ pipeline = client.runs.list_pipelines(search="rna-seq")["data"][0]
 run_id = client.runs.create_run(pipeline["id"], project["id"], "first run")
 form = client.runs.get_run_form(run_id)
 
-environment = form["runEnvironment"]["availableList"][0]
+environments = form["runEnvironment"]["availableList"]
+if not environments:
+    raise SystemExit("No run environment you can launch on: add one under your profile.")
+environment = environments[0]
 directory = default_execution_directory(environment, "first run")  # None: choose one yourself
 
 client.runs.save_run(
     run_id,
     permission=form["permission"],
-    inputs=[{"name": "genome_build", "value": "human_hg38"}],
+    inputs=[{"name": "genome_build", "type": "input", "value": "human_hg38"}],
     run_environment_id=environment["id"],
     launch_directory=directory,
 )
@@ -538,8 +541,10 @@ print(client.runs.run_status(run_id))
 The proposed directory is the run environment's declared default execution
 directory when it has one, otherwise `/home/<login>/foundry-connect-runs/<run name>`
 using the run environment's login name. `save_run` sends only the fields you
-pass: inputs merge with the saved ones, while `process_options` replaces the
-whole set.
+pass. On a Foundry pipeline inputs merge with the saved ones; on an external
+(nf-core) pipeline the inputs dict is replaced whole, so send it complete.
+`process_options` always replaces the whole set. Each input needs its `type`
+(`input`, `collection` or `vmetaCollection`), as in the form.
 
 ## Logging
 

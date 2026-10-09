@@ -506,6 +506,41 @@ foundry process delete-parameter --parameterID <parameter_id>
 
 ---
 
+### **7. Running a Pipeline**
+
+Start a run from any pipeline you can read, with no earlier run needed:
+
+```python
+from viafoundry.client import ViaFoundryClient
+from viafoundry.runs import default_execution_directory
+
+client = ViaFoundryClient()
+project = client.runs.create_project("My analysis")
+pipeline = client.runs.list_pipelines(search="rna-seq")["data"][0]
+
+run_id = client.runs.create_run(pipeline["id"], project["id"], "first run")
+form = client.runs.get_run_form(run_id)
+
+environment = form["runEnvironment"]["availableList"][0]
+directory = default_execution_directory(environment, "first run")  # None: choose one yourself
+
+client.runs.save_run(
+    run_id,
+    permission=form["permission"],
+    inputs=[{"name": "genome_build", "value": "human_hg38"}],
+    run_environment_id=environment["id"],
+    launch_directory=directory,
+)
+client.runs.launch_run(run_id)
+print(client.runs.run_status(run_id))
+```
+
+The proposed directory is the run environment's declared default execution
+directory when it has one, otherwise `/home/<login>/foundry-connect-runs/<run name>`
+using the run environment's login name. `save_run` sends only the fields you
+pass: inputs merge with the saved ones, while `process_options` replaces the
+whole set.
+
 ## Logging
 
 Errors and debug information are logged to `viafoundry_errors.log` in the current working directory. Ensure this file is accessible for troubleshooting.

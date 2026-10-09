@@ -4,6 +4,7 @@ from requests.exceptions import RequestException, MissingSchema
 from viafoundry.reports import Reports
 from viafoundry.process import Process
 from viafoundry.metadata import Metadata 
+from viafoundry.runs import Runs
 import logging
 from typing import Optional, Union, Dict
 
@@ -43,6 +44,7 @@ class ViaFoundryClient:
             logging.info("Process functionality initialized successfully.")
             self.metadata = Metadata(self)  # Metadata handler initialization
             logging.info("Metadata functionality initialized successfully.")
+            self.runs = Runs(self)  # Run lifecycle handler initialization
 
         except Exception as e:
             logging.error("Initialization error", exc_info=True)

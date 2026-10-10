@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field, field_validator, ConfigDict
+from pydantic import AliasChoices, BaseModel, EmailStr, Field, field_validator, ConfigDict
 from typing import Literal, Optional, List, Dict, Any, Union
 from datetime import datetime
 from enum import Enum
@@ -548,12 +548,15 @@ class FileAddRequest(BaseModel):
     """
     Model for adding files to a dataset.
     """
-    canvasID: str = Field(..., description="The ID of the study tracker canvas",
-                           example="66269972dc000cff1c8a54b0")
+    # The addFile route requires canvasId. canvasID is still accepted as input
+    # so callers written against the old field name keep working.
+    canvasId: str = Field(..., description="The ID of the study tracker canvas",
+                          validation_alias=AliasChoices("canvasId", "canvasID"),
+                          examples=["66269972dc000cff1c8a54b0"])
     file: Dict[str, Any] = Field(...,
                                  description="File Object associated with the dataset")
 
-    @field_validator('canvasID')
+    @field_validator('canvasId')
     @classmethod
     def validate_canvas_id(cls, v):
         """Validate canvasId is a valid MongoDB ObjectId (24 hex characters)."""

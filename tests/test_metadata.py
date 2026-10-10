@@ -743,7 +743,7 @@ class TestMetadata:
         """Test adding files to dataset with dict data."""
         dataset_id = "dataset123"
         file_data = {
-            "canvasID": "66269972dc000cff1c8a54b0",
+            "canvasId": "66269972dc000cff1c8a54b0",
             "file": {"name": "test.csv", "path": "/data/test.csv"}
         }
         mock_response = {"message": "Files added"}
@@ -760,7 +760,7 @@ class TestMetadata:
         """Test adding files to dataset with FileAddRequest model."""
         dataset_id = "dataset123"
         file_data = FileAddRequest(
-            canvasID="66269972dc000cff1c8a54b0",
+            canvasId="66269972dc000cff1c8a54b0",
             file={"name": "test.csv", "path": "/data/test.csv"}
         )
         mock_response = {"message": "Files added"}
@@ -774,10 +774,33 @@ class TestMetadata:
         )
         assert result == mock_response
 
+    def test_add_files_to_dataset_model_sends_canvas_id(self, metadata, mock_client):
+        """The addFile route requires canvasId, so the model must send that key."""
+        dataset_id = "dataset123"
+        canvas_id = "66269972dc000cff1c8a54b0"
+        file = {"name": "test.csv", "path": "/data/test.csv"}
+        mock_client.call.return_value = {"message": "Files added"}
+
+        for file_data in (
+            FileAddRequest(canvasId=canvas_id, file=file),
+            FileAddRequest(canvasID=canvas_id, file=file),
+        ):
+            mock_client.call.reset_mock()
+            metadata.add_files_to_dataset(dataset_id, file_data)
+            mock_client.call.assert_called_once_with(
+                "POST", f"/api/v1/vmeta/dataset/{dataset_id}/addFile",
+                data={"canvasId": canvas_id, "file": file}
+            )
+
+    def test_file_add_request_rejects_bad_canvas_id(self):
+        """canvasId must still be a 24 character ObjectId."""
+        with pytest.raises(ValueError):
+            FileAddRequest(canvasId="not-an-object-id", file={})
+
     def test_add_files_to_dataset_error(self, metadata, mock_client):
         """Test error handling in add_files_to_dataset."""
         dataset_id = "dataset123"
-        file_data = {"canvasID": "test", "file": {}}
+        file_data = {"canvasId": "test", "file": {}}
         mock_client.call.side_effect = Exception("Add failed")
 
         with pytest.raises(Exception) as exc_info:

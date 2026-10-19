@@ -1032,6 +1032,36 @@ print(response)
 ```
 
 ---
+### **7. Building a Pipeline SDK**
+
+`client.pipelines` reads, creates and saves pipelines through the same endpoint the
+web editor uses. A builder adds process, input and output nodes and computes the edge
+strings, refusing an edge whose two ends have different file types.
+
+```python
+from viafoundry.client import ViaFoundryClient
+
+client = ViaFoundryClient()
+pipelines = client.pipelines
+
+b = pipelines.builder()                        # or pipelines.builder(1777) to extend a saved one
+step = b.add_process(3017)                     # a process id (not a pipeline id)
+label = b.add_input("inputParam")              # its name is the field label on the run page
+report = b.add_output("outputParam")           # add_output(name, publish="html") shows it as a report
+b.connect(label, step)                         # pick a slot with input= / output= (index, sname, name or parameter id)
+b.connect(step, report)
+
+created = pipelines.create_pipeline(
+    "My pipeline", pipeline_group_id=667,      # a pipeline menu group, not a process menu group
+    nodes=b.nodes, edges=b.edges,
+)                                              # private (permission 3) unless permission= says otherwise
+pipeline = pipelines.get_pipeline(created["id"])   # nodes, edges and mainG parsed
+pipelines.update_pipeline(created["id"], summary="New summary")
+```
+
+`update_pipeline` saves in place (same id and revision), so runs already made from that
+pipeline see the change. Save only over a pipeline you own and that no one else runs.
+
 ### Release a version
 
 1. First get a new version

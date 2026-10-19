@@ -5,6 +5,7 @@ from viafoundry.reports import Reports
 from viafoundry.process import Process
 from viafoundry.metadata import Metadata 
 from viafoundry.runs import Runs
+from viafoundry.pipelines import Pipelines
 import logging
 from typing import Optional, Union, Dict
 
@@ -45,6 +46,7 @@ class ViaFoundryClient:
             self.metadata = Metadata(self)  # Metadata handler initialization
             logging.info("Metadata functionality initialized successfully.")
             self.runs = Runs(self)  # Run lifecycle handler initialization
+            self.pipelines = Pipelines(self)  # Pipeline read, create and save
 
         except Exception as e:
             logging.error("Initialization error", exc_info=True)

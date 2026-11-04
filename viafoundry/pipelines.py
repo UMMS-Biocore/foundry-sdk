@@ -4,22 +4,35 @@ The web editor saves a pipeline with one call, POST /api/pipeline/v1: without
 an id it creates, with an id it saves over that pipeline. A pipeline's graph is
 a set of nodes and a list of edge strings.
 
-A node is a process (its param is the process id), a pipeline input (``inPro``)
-or a pipeline output (``outPro``). Each end of an edge is a handle,
+A node is a process (its param is the process id), a pipeline input (``inPro``),
+a pipeline output (``outPro``) or a module (``p<pipeline id>``), another
+pipeline used as a node. Each end of an edge is a handle,
 ``{o|i}-{param}-{slot}-{parameterId}-{N}``: o for an output, i for an input,
 slot the 0-based position among that process's inputs or outputs (always 1 on
 inPro and outPro), parameterId the shared parameter definition, and N the
 number in the node key ``g-N``. Edges run output to input, except that an edge
 into a pipeline output is written outPro side first.
 
+A module's edge ends are ``pi-{process}-{order}-{parameterId}-{N}`` (a module
+input) and ``po-...`` (a module output): process and parameterId belong to the
+process inside the module that consumes or produces the value, and order is
+the port's 0-based position among the module's inputs or outputs. Ports are
+numbered as the server numbers them: one input per distinct pipeline input end
+in the module's edges, in first appearance order, carrying the last process it
+feeds; one output per pipeline output edge, in stored order.
+
 Process ids and pipeline ids are separate id spaces, and pipeline menu groups
 are separate from process menu groups.
 """
 import json
+import re
 from typing import Callable, Dict, List, Optional, Tuple, Union
 
 INPUT_NODE = "inPro"
 OUTPUT_NODE = "outPro"
+MAX_MODULE_DEPTH = 5
+
+_MODULE_PARAM = re.compile(r"^p(\d+)$")
 
 DEFAULT_PIPE_CONFIG = (
     '\n//~@:~\n@~:"nextflow.config"\n//~@:~\n'
@@ -98,9 +111,41 @@ def parse_handle(handle: str) -> Dict:
 
 
 def parse_edge(edge: str) -> Tuple[Dict, Dict]:
-    """(source output handle, target input handle) of an edge string, whatever its written order."""
+    """(source output handle, target input handle) of an edge string, whatever its written order.
+
+    Module ends (pi, po) count by their last letter, so they parse in dataflow order too.
+    """
     first, second = (parse_handle(h) for h in edge.split("_"))
-    return (first, second) if first["side"] == "o" else (second, first)
+    return (first, second) if first["side"][-1] == "o" else (second, first)
+
+
+def module_id(param) -> Optional[int]:
+    """The pipeline id of a module node's param (``p1777``), or None for any other node."""
+    match = _MODULE_PARAM.match(str(param))
+    return int(match.group(1)) if match else None
+
+
+def _module_io_ports(pipeline_id: int, edges: List[str]) -> Dict[str, List[Dict]]:
+    """A module pipeline's ports as the server numbers them, from its edges alone."""
+    inputs: Dict[str, Dict] = {}
+    outputs: List[Dict] = []
+    for edge in edges:
+        halves = edge.split("_")
+        parts = [half.split("-") for half in halves]
+        if len(halves) != 2 or any(len(p) != 5 for p in parts):
+            raise PipelineGraphError(f"Module pipeline {pipeline_id} has a malformed edge {edge}.")
+        io_at = next((i for i, p in enumerate(parts) if p[1] in (INPUT_NODE, OUTPUT_NODE)), None)
+        if io_at is None:
+            continue
+        io, other = parts[io_at], parts[1 - io_at]
+        port = {"node": f"g-{io[4]}", "side": other[0], "process_id": int(other[1]),
+                "process_slot": int(other[2]), "parameter_id": int(other[3])}
+        if io[1] == INPUT_NODE:
+            # A later edge from the same end keeps the port's place and takes its consumer.
+            inputs[halves[io_at]] = port
+        else:
+            outputs.append(port)
+    return {"inputs": list(inputs.values()), "outputs": outputs}
 
 
 def _type_of(parameter: Dict) -> Tuple[str, str]:
@@ -125,14 +170,30 @@ class PipelineBuilder:
 
     ``get_process`` returns a process as GET /api/v1/process/{id} does, with its
     ``inputs`` and ``outputs`` lists; the builder reads slot order and types from it.
+    ``get_pipeline`` returns a pipeline as Pipelines.get_pipeline does; the builder
+    reads module pipelines with it. ``pipeline_id`` is the pipeline being built when
+    it already has an id, and ``revision_ids`` its other revisions: a module that
+    holds any of them, at any depth, is refused.
     """
 
     COLUMN = 250
     ROW = 120
 
-    def __init__(self, get_process: Callable[[int], Dict], nodes: Optional[Dict] = None, edges: Optional[List[str]] = None) -> None:
+    def __init__(
+        self,
+        get_process: Callable[[int], Dict],
+        nodes: Optional[Dict] = None,
+        edges: Optional[List[str]] = None,
+        get_pipeline: Optional[Callable[[int], Dict]] = None,
+        pipeline_id: Optional[int] = None,
+        revision_ids: Optional[List[int]] = None,
+    ) -> None:
         self._get_process = get_process
+        self._get_pipeline = get_pipeline
+        self._own_ids = {int(i) for i in [pipeline_id, *(revision_ids or [])] if i is not None}
         self._processes: Dict[str, Dict] = {}
+        self._pipelines: Dict[int, Dict] = {}
+        self._module_ports: Dict[int, Dict[str, List[Dict]]] = {}
         self.nodes: Dict[str, Dict] = dict(nodes or {})
         self.edges: List[str] = list(edges or [])
 
@@ -162,6 +223,84 @@ class PipelineBuilder:
         """Add a process node and return its key (g-N)."""
         process = self.process(process_id)
         return self._add(name or process.get("name") or str(process_id), str(process_id), {}, x, y, column=1)
+
+    def pipeline(self, pipeline_id: Union[int, str]) -> Dict:
+        """A module pipeline as get_pipeline returns it, read once."""
+        number = int(pipeline_id)
+        if number not in self._pipelines:
+            if self._get_pipeline is None:
+                raise PipelineGraphError("This builder has no get_pipeline to read module pipelines with; use Pipelines.builder().")
+            pipeline = self._get_pipeline(number)
+            if not isinstance(pipeline, dict) or not pipeline.get("id"):
+                raise PipelineGraphError(f"Pipeline {number} could not be read as a module.")
+            self._pipelines[number] = pipeline
+        return self._pipelines[number]
+
+    def _inner_parameter(self, port: Dict, kind: str) -> Dict:
+        """The inner process parameter behind a module port: by slot on a process end,
+        by parameter id on the end of a module nested inside it."""
+        params = self.process(port["process_id"])[kind]
+        slot = port["process_slot"]
+        if port["side"] in ("i", "o") and 0 <= slot < len(params) \
+                and str(params[slot].get("parameter_id")) == str(port["parameter_id"]):
+            return params[slot]
+        return next((p for p in params if str(p.get("parameter_id")) == str(port["parameter_id"])), {})
+
+    def module_ports(self, pipeline_id: Union[int, str]) -> Dict[str, List[Dict]]:
+        """A pipeline's ports as a module: {"inputs": [...], "outputs": [...]}.
+
+        Each port is {slot, name, process_id, parameter_id, file_type, qualifier}:
+        slot its 0-based order, name the module pipeline's own input or output
+        node, and the rest the inner process parameter that consumes or produces it.
+        """
+        number = int(pipeline_id)
+        if number not in self._module_ports:
+            module = self.pipeline(number)
+            nodes = parse_nodes(module.get("nodes"))
+            ports = {}
+            for kind, found in _module_io_ports(number, module.get("edges") or []).items():
+                ports[kind] = []
+                for slot, port in enumerate(found):
+                    parameter = self._inner_parameter(port, kind)
+                    ports[kind].append({
+                        "slot": slot,
+                        "name": nodes.get(port["node"], {}).get("nodeName"),
+                        "process_id": port["process_id"],
+                        "parameter_id": port["parameter_id"],
+                        "file_type": parameter.get("file_type") or parameter.get("fileType") or "",
+                        "qualifier": parameter.get("qualifier") or "",
+                    })
+            self._module_ports[number] = ports
+        return self._module_ports[number]
+
+    def _check_nesting(self, pipeline_id: int, chain: Tuple[int, ...] = ()) -> None:
+        """Refuse a module that holds the pipeline being built, holds itself, or nests too deep."""
+        path = " > ".join(map(str, chain + (pipeline_id,)))
+        if pipeline_id in self._own_ids:
+            raise PipelineGraphError(
+                f"A pipeline cannot hold itself as a module: {path} reaches pipeline {pipeline_id}, "
+                "the pipeline being built or a revision of it."
+            )
+        if pipeline_id in chain:
+            raise PipelineGraphError(f"Module pipeline {chain[0]} holds itself: {path}.")
+        if len(chain) >= MAX_MODULE_DEPTH:
+            raise PipelineGraphError(f"Modules nest at most {MAX_MODULE_DEPTH} deep; {path} is deeper.")
+        for node in parse_nodes(self.pipeline(pipeline_id).get("nodes")).values():
+            inner = module_id(node.get("param"))
+            if inner is not None:
+                self._check_nesting(inner, chain + (pipeline_id,))
+
+    def add_module(self, pipeline_id: Union[int, str], x: Optional[float] = None, y: Optional[float] = None, name: Optional[str] = None) -> str:
+        """Add another pipeline as a module node and return its node key (g-N).
+
+        Reads the module pipeline and every module inside it, and refuses one that
+        holds the pipeline being built or nests more than MAX_MODULE_DEPTH deep.
+        """
+        pipeline_id = int(pipeline_id)
+        self._check_nesting(pipeline_id)
+        self.module_ports(pipeline_id)
+        module = self.pipeline(pipeline_id)
+        return self._add(name or module.get("name") or f"p{pipeline_id}", f"p{pipeline_id}", {}, x, y, column=1)
 
     def add_input(self, name: str, x: Optional[float] = None, y: Optional[float] = None) -> str:
         """Add a pipeline input. Its name is the field label on the run page."""
@@ -195,20 +334,36 @@ class PipelineBuilder:
             raise PipelineGraphError(f"{node} has {found} {kind} matching {which!r}.")
         return matches[0]
 
+    def _ports(self, node: Dict, kind: str) -> List[Dict]:
+        """A process node's inputs or outputs, or a module node's ports."""
+        inner = module_id(node["param"])
+        if inner is not None:
+            return self.module_ports(inner)[kind]
+        return self.process(node["param"])[kind]
+
+    def _end(self, node_key: str, kind: str, which: Union[None, int, str]) -> Tuple[str, Dict]:
+        """(edge end, parameter) for the chosen input or output of a process or module node."""
+        node = self._node(node_key)
+        slot, parameter = self._slot(self._ports(node, kind), which, node_key, kind[:-1])
+        side, number = ("i" if kind == "inputs" else "o"), node_key.split("-")[1]
+        if module_id(node["param"]) is not None:
+            return f"p{side}-{parameter['process_id']}-{slot}-{parameter['parameter_id']}-{number}", parameter
+        return f"{side}-{node['param']}-{slot}-{parameter['parameter_id']}-{number}", parameter
+
     def _connected_inputs(self, input_key: str) -> List[Dict]:
         targets = []
         for edge in self.edges:
             source, target = parse_edge(edge)
             if source["node"] == input_key:
-                targets.append(self.process(target["param"])["inputs"][target["slot"]])
+                targets.append(self._ports(self._node(target["node"]), "inputs")[target["slot"]])
         return targets
 
     def connect(self, source: str, target: str, output: Union[None, int, str] = None, input: Union[None, int, str] = None) -> str:
-        """Connect source (a process or pipeline input) to target (a process or pipeline output).
+        """Connect source (a process, module or pipeline input) to target (a process, module or pipeline output).
 
         ``output`` and ``input`` pick the process's slot by index, sname, name or
-        parameter id; leave one out when the process has a single choice.
-        Raises PipelineGraphError when the types do not match.
+        parameter id, or the module's port by index or name; leave one out when
+        there is a single choice. Raises PipelineGraphError when the types do not match.
         """
         src, dst = self._node(source), self._node(target)
         src_n, dst_n = source.split("-")[1], target.split("-")[1]
@@ -218,10 +373,10 @@ class PipelineBuilder:
             raise PipelineGraphError("A pipeline input cannot feed a pipeline output directly.")
 
         if dst["param"] == OUTPUT_NODE:
-            slot, out = self._slot(self.process(src["param"])["outputs"], output, source, "output")
-            edge = f"i-{OUTPUT_NODE}-1-{out['parameter_id']}-{dst_n}_o-{src['param']}-{slot}-{out['parameter_id']}-{src_n}"
+            out_end, out = self._end(source, "outputs", output)
+            edge = f"i-{OUTPUT_NODE}-1-{out['parameter_id']}-{dst_n}_{out_end}"
         else:
-            slot, inp = self._slot(self.process(dst["param"])["inputs"], input, target, "input")
+            in_end, inp = self._end(target, "inputs", input)
             if src["param"] == INPUT_NODE:
                 for other in self._connected_inputs(source):
                     if not compatible(other, inp):
@@ -230,15 +385,15 @@ class PipelineBuilder:
                         )
                 earlier = [parse_edge(e)[0] for e in self.edges if parse_edge(e)[0]["node"] == source]
                 parameter_id = earlier[0]["parameterId"] if earlier else inp["parameter_id"]
-                edge = f"o-{INPUT_NODE}-1-{parameter_id}-{src_n}_i-{dst['param']}-{slot}-{inp['parameter_id']}-{dst_n}"
+                edge = f"o-{INPUT_NODE}-1-{parameter_id}-{src_n}_{in_end}"
             else:
-                out_slot, out = self._slot(self.process(src["param"])["outputs"], output, source, "output")
+                out_end, out = self._end(source, "outputs", output)
                 if not compatible(out, inp):
                     raise PipelineGraphError(
                         f"{source} output {out.get('name')} is {_type_of(out)}; "
                         f"{target} input {inp.get('name')} wants {_type_of(inp)}."
                     )
-                edge = f"o-{src['param']}-{out_slot}-{out['parameter_id']}-{src_n}_i-{dst['param']}-{slot}-{inp['parameter_id']}-{dst_n}"
+                edge = f"{out_end}_{in_end}"
 
         if edge in self.edges:
             return edge
@@ -336,11 +491,13 @@ class Pipelines:
         return self.client.call("POST", "/api/pipeline/v1", data=body)
 
     def builder(self, pipeline_id: Optional[int] = None) -> PipelineBuilder:
-        """A builder that reads processes from the server, optionally starting from a saved pipeline."""
+        """A builder that reads processes and module pipelines from the server, optionally
+        starting from a saved pipeline (which it then refuses to take as its own module)."""
         def get_process(process_id: int) -> Dict:
             return self.client.call("GET", f"/api/v1/process/{process_id}")
 
         if pipeline_id is None:
-            return PipelineBuilder(get_process)
+            return PipelineBuilder(get_process, get_pipeline=self.get_pipeline)
         pipeline = self.get_pipeline(pipeline_id)
-        return PipelineBuilder(get_process, pipeline["nodes"], pipeline["edges"])
+        return PipelineBuilder(get_process, pipeline["nodes"], pipeline["edges"],
+                               get_pipeline=self.get_pipeline, pipeline_id=pipeline_id)

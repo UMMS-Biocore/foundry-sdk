@@ -1062,6 +1062,22 @@ pipelines.update_pipeline(created["id"], summary="New summary")
 `update_pipeline` saves in place (same id and revision), so runs already made from that
 pipeline see the change. Save only over a pipeline you own and that no one else runs.
 
+A pipeline can also run inside another one as a module. `module_ports` lists its inputs
+and outputs, each named by the module pipeline's own input or output node and typed by
+the process inside it, and `connect` picks one by 0-based slot or name:
+
+```python
+b = pipelines.builder()
+module = b.add_module(1545)                    # a pipeline id; the node is named after the pipeline
+b.module_ports(1545)                           # {"inputs": [{"slot", "name", "file_type", ...}], "outputs": [...]}
+sheet = b.add_input("samplesheet")
+b.connect(sheet, module, input="samplesheet")  # or input=0
+b.connect(module, b.add_output("Report", publish="html"), output="HTML_Report")
+```
+
+A module that holds the pipeline being built (`pipelines.builder(id)`) is refused, and
+modules nest at most five deep.
+
 ### Release a version
 
 1. First get a new version

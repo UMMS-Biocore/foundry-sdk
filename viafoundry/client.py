@@ -262,6 +262,9 @@ class ViaFoundryClient:
         elif status_code == 403:
             self._raise_error(304, "Forbidden: You do not have permission to access this resource.")
         elif status_code == 404:
+            detail = self._error_message_from(response)
+            if detail:
+                self._raise_error(305, f"Not Found: {detail}")
             self._raise_error(305, "Not Found: The requested resource does not exist.")
         elif status_code == 500:
             self._raise_error(306, "Internal Server Error: Something went wrong on the server.")
@@ -275,6 +278,8 @@ class ViaFoundryClient:
 
         A 400 names what was wrong with the request, such as a refused field,
         and that message is the only way a caller can learn how to fix it.
+        A 404 names what was missing, such as a collection id, which tells a
+        missing record apart from a wrong route.
         """
         try:
             body = response.json()

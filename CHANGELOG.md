@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+- A 404 now carries the server's own message, for example
+  `Error 305: Not Found: Collection with ID ... not found`, so a missing record
+  no longer reads like a wrong route. A 404 without a message in its body keeps
+  the generic text. The error code (305) and type (`RuntimeError`) are unchanged.
+
 ## 1.4.0
 
 ### Added

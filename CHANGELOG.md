@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.4.1
 
 ### Fixed
 - A 404 now carries the server's own message, for example

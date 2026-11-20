@@ -74,7 +74,7 @@ class TestViaFoundryClient:
 
 
 class TestBadRequestMessage:
-    """A 400 carries the server's reason, which tells the caller what to fix."""
+    """A 400 or 404 carries the server's reason, which tells the caller what to fix or what is missing."""
 
     def _response(self, status, body=None, text=""):
         import requests
@@ -101,4 +101,18 @@ class TestBadRequestMessage:
     def test_400_reads_an_error_key_too(self, client):
         response = self._response(400, {"error": "Forbidden field"})
         with pytest.raises(RuntimeError, match="Forbidden field"):
+            client._handle_http_error(response)
+
+    def test_404_passes_the_server_message_through(self, client):
+        response = self._response(404, {"message": "Collection with ID abc123 not found"})
+        with pytest.raises(RuntimeError, match="^Error 305: Not Found: Collection with ID abc123 not found$"):
+            client._handle_http_error(response)
+
+    @pytest.mark.parametrize("body,text", [
+        (None, "<html>Cannot GET /api/v1/nowhere</html>"),
+        ({"status": 404}, ""),
+    ])
+    def test_404_without_a_server_message_keeps_the_generic_message(self, client, body, text):
+        response = self._response(404, body, text=text)
+        with pytest.raises(RuntimeError, match="^Error 305: Not Found: The requested resource does not exist.$"):
             client._handle_http_error(response)
